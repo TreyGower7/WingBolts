@@ -9,7 +9,7 @@ But let me tell you, the path of a programmer is not always smooth. It's riddled
 
 Remember, the most successful programmers weren't born with an innate ability to code flawlessly. They stumbled, they fell, and they persevered. They embraced failure as a stepping stone to success. Each error message, each setback, was not a sign of defeat but an opportunity to learn, to grow, and to become better than they were yesterday.
 
-- Your fearless project lead
+-Your fearless project lead
 
 
 P.S. Tell em to bring out tha Lobsta
