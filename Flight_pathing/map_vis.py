@@ -3,9 +3,12 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import os
 
-# TODO: shape file of arca to map would be cool
-
 def map_path(latlon_path):
+    """
+    right now this is not dynamic which might
+    be okay for just visualizing the path. 
+    TODO-> ask about that
+    """
     # read in
     coords = pd.read_csv(latlon_path)
     coords.rename(columns={'GLOBAL_POSITION_INT.lat': 'Latitude'}, inplace=True)
@@ -30,7 +33,8 @@ def map_path(latlon_path):
     plt.xlabel("Longitude Coordinates")
     plt.ylabel("Latitude Coordinates")
 
-    plt.savefig("flight_maps/"+filename)
+    plt.savefig("maps/"+filename)
+
 
 if __name__ == "__main__":
-    map_path("flight_logs/latlon-0216.csv")
+    map_path("flight_logs/latlon-0209.csv")
