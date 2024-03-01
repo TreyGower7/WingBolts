@@ -1,3 +1,4 @@
+### To use:
 as of right now edit main in `map_vis.py` for whatever file name
 
 
