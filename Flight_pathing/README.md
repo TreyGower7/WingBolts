@@ -1,5 +1,6 @@
 ### To use:
-as of right now edit main in `map_vis.py` for whatever file name
+as of right now edit main in `map_vis.py` for whatever log file to viz
+`python3 map_vis.py`
 
 
 ### Note:
