@@ -1,5 +1,7 @@
+# flight_pathing
+
 ### To use:
-as of right now edit main in `map_vis.py` for whatever log file to viz
+as of right now edit main in `map_vis.py` for whatever log file to viz  
 `python3 map_vis.py`
 
 
