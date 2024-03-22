@@ -16,5 +16,7 @@ https://ardupilot.org/planner/docs/mission-planner-overview.html
 mavlink guide (for mission planner) :
 https://mavlink.io/en/
 
-blah
+Pixhawk Simulation stuff:
+https://gazebosim.org/home
+https://docs.px4.io/v1.12/en/simulation/gazebo.html
 
