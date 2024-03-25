@@ -3,7 +3,8 @@ import math
 
 def projectile_range():
     """
-    Using dummy variables until we find out how to get the data from Pixhawk
+    Using random numbers for the variables as placeholders until we find out how to get the data from Pixhawk
+    This is a SUPER rough code straight from the research paper
     """
     # all of the following are recorded at a given instant and should come from Pixhawk
     # idk why the paper said it needed these? not used in the code?
