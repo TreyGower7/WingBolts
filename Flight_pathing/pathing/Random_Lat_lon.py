@@ -16,7 +16,8 @@ def random_coords(domain):
     return latitude, longitude
 
 # Example usage:
-domain = (-90, 90, -180, 180)  # Entire globe
+domain = (30.320122, 30.324865, -97.603076, -97.598687)  # Boundaries for Arca
 lat, lon = random_coords(domain)
-print("Latitude:", lat)
-print("Longitude:", lon)
+coords = [lat, lon]
+
+print(coords)
