@@ -92,8 +92,7 @@ def measure_cpu_usage(duration):
     return avg_cpu_usage
 
 
-
-if __name__ == "__main__":
+def main():
     # train data and test accuracy
     clf = load_and_train('smiley_faces_dataset')
 
@@ -102,3 +101,6 @@ if __name__ == "__main__":
 
     # Measure CPU usage for 10 seconds
     avg_cpu_usage = measure_cpu_usage(10)
+
+if __name__ == "__main__":
+    main()
