@@ -1,4 +1,9 @@
 import random
+"""
+Simulates input of random coords at Arca into pixhawk
+"""
+
+__author__ = "Trey Gower"
 
 def random_coords(domain):
     """
@@ -21,3 +26,4 @@ def random_coords(domain):
 domain = (30.320122, 30.324865, -97.603076, -97.598687)  # Boundaries for Arca
 coords = random_coords(domain)
 print(coords)
+print(f'{coords["latitude"]}, {coords["longitude"]}')
