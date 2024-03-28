@@ -13,16 +13,17 @@ def get_telem():
     Gets Telemetry data from Pixhawk
     '''
     domain = (30.320122, 30.324865, -97.603076, -97.598687)  # Boundaries for Arca
-    return random_coords(domain)
+    coords = random_coords(domain)
+    return coords
 
 def send_telem(formatted_coords):
     '''
     sends telemetry data to pixhawk from pi
     '''
+    
 def main():
     ''' Main entry point of the app '''
     coords = get_telem()
-
 if __name__ == "__main__":
     ''' This is executed when run from the command line '''
     main()

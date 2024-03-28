@@ -1,7 +1,7 @@
 from pymavlink import mavutil
 
 # Connect to Pixhawk
-connect = mavutil.mavlink_connection('udpin:localhost:14550')
+connect = mavutil.mavlink_connection('udpin:0.0.0.0:14550')
 #Waits for first heartbeat
 connect.wait_heartbeat()
 
