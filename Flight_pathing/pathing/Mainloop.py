@@ -2,9 +2,9 @@
 from Telempi import get_telem
 import time
 """
-Main script for connecting to pixhawk then 
+Main script for connecting to pixhawk,
 sending/recieving coordinates from raspberry pi to pixhawk 
-and upadting waypoints based on ML
+and updating waypoints based on ML
 """
 
 __author__ = "Trey Gower"
