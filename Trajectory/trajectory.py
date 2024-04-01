@@ -1,7 +1,7 @@
 import numpy as np
 import math
 
-def projectile_range():
+def projectile_range(v_x, v_y, H):
     """
     Using random numbers for the variables as placeholders until we find out how to get the data from Pixhawk
     This is a SUPER rough code straight from the research paper
@@ -10,11 +10,10 @@ def projectile_range():
     # idk why the paper said it needed these? not used in the code?
 
     u = 1 # aircraft velocity (relative to ground) (groundspeed?)
-    H = 1 # aircraft altitude (above ground level)
     w = 1 # wind speed (relative to ground)
 
     # these are constant parameters that should be stored beforehand
-    rho = 0 # density of air
+    rho = 1.225 # density of air
     Cd = 0 # drag coefficient
     A = 0 # surface area of the payload
     m = 1 # payload mass
@@ -24,10 +23,8 @@ def projectile_range():
     N = 3000 # max iterations
 
     iters = 0
-    v_x = 0
-    v_y = 0
-    x = 1
-    y = 1
+    x = 0
+    y = 0
     t = 0
     while (iters < N):
         a_x = -(q/m)*v_x**2
