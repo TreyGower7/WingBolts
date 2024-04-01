@@ -8,7 +8,7 @@ Updating pixhawk from our ML model
 
 #Connect Pi to Pixhawk
 
-'''
+
 connect = mavutil.mavlink_connection('udpin:localhost:14550')
 
 # Waits for first heartbeat **only need loop for viewing purposes**
@@ -17,7 +17,7 @@ while not connect.wait_heartbeat():
     time.sleep(1)
 
 print(f'Heartbeat from system: {connect.target_system()}, component: {connect.target_component()} ')
-'''
+
 __author__ = "Trey Gower"
 
 def get_telem():
@@ -27,10 +27,10 @@ def get_telem():
     domain = (30.320122, 30.324865, -97.603076, -97.598687)  # Boundaries for Arca
     coords = random_coords(domain)
     return coords
-"""Need to test with pi and pixhawk
+
 def send_telem(coords):
     '''
-    #sends telemetry data to pixhawk from pi
+    sends telemetry data to pixhawk from pi
     '''
      # Send telemetry data to Pixhawk
     msg = mavutil.mavlink.MAVLink_mission_item_message(
@@ -41,7 +41,7 @@ def send_telem(coords):
 
 def recieve_telem():
     '''
-    #recieves telemetry data to pixhawk from pi
+    recieves telemetry data to pixhawk from pi
     '''
     #Receive a message
     msg = connect.recv_match()
@@ -52,11 +52,10 @@ def recieve_telem():
         print(msg)
     return msg
     
- def altitude_handle():
+def altitude_handle():
     '''
-    #handles the altitude inputs to the plane
+    handles the altitude inputs to the plane
     '''
-"""
 
 def main():
     ''' Main Func '''
