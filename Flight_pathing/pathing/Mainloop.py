@@ -1,5 +1,5 @@
 #import Listen
-from Telempi import get_telem
+from Telempi import get_telem, send_telem
 import time
 """
 Main script for connecting to pixhawk,
@@ -18,7 +18,8 @@ def main():
     while a != 1:
         coords = get_telem()
         print(f'{coords["latitude"]}, {coords["longitude"]}')
-        time.sleep(2)
+        time.sleep(3)
+        send_telem(coords)
 
 if __name__ == "__main__":
     """ This is executed when run from the command line """
