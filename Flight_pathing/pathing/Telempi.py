@@ -9,7 +9,7 @@ Updating pixhawk from our ML model
 #Connect Pi to Pixhawk
 
 
-connect = mavutil.mavlink_connection('udpin:localhost:14550')
+connect = mavutil.mavlink_connection('udpin:10.0.1.128:14550')
 
 # Waits for first heartbeat **only need loop for viewing purposes**
 while not connect.wait_heartbeat():
