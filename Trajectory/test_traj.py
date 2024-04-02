@@ -1,6 +1,7 @@
 from trajectory import release_point, projectile_range, geo_to_cartesian
 
 def main():
+    # 0's until i figure out what to test:
     v_y = 0
     v_x = 0
     H = 0
@@ -15,7 +16,7 @@ def main():
     xf = RP_x + v_x*time
 
     # how close is xf to target_x? 
-    # yf should be 0 and target_y should also be 0 because it is flat on the ground
+    # i assume yf should be 0 and target_y should also be 0 because the object is flat on the ground
 
 
 
