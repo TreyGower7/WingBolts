@@ -45,7 +45,7 @@ def projectile_range(v_x, v_y, H):
             continue
         iters += 1
 
-    return(R)
+    return(R,t)
 
 def release_point(target_long, target_lat, R, current_long, current_lat):
     z = (target_long - current_long)/(target_lat - current_lat)
