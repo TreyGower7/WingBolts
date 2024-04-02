@@ -55,6 +55,16 @@ def release_point(target_long, target_lat, R, current_long, current_lat):
     return(RP_lat, RP_long)
 
 
+def geo_to_cartesian(latitude, longitude):
+    # have to double check that this is how you calculate it
+    r = 6371
+    lat = math.radians(latitude)
+    lon = math.radians(longitude)
+    x = r*math.cos(lat)*math.cos(lon)
+    y = r*math.cos(lat)*math.sin(lon)
+    return(x,y)
+
+
 if __name__ == "__main__":
     print(projectile_range())
 
