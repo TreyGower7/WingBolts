@@ -1,5 +1,5 @@
-from RandLatlon import random_coords
 from pymavlink import mavutil
+import random
 import time
 
 # Set the connection parameters (change accordingly)
@@ -8,6 +8,27 @@ baudrate = 115200  # or whatever baudrate your connection uses
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
+
+
+
+def random_coords(domain):
+    """
+    *********************
+    ** Only Using For Sims **
+    *********************
+    Generate random latitude and longitude within a specified domain.
+
+    Args:
+    Tuple (min_lat, max_lat, min_lon, max_lon)
+
+    Returns:
+    Tuple (latitude, longitude)
+    """
+    min_lat, max_lat, min_lon, max_lon = domain
+    lat = random.uniform(min_lat, max_lat)
+    lon = random.uniform(min_lon, max_lon)
+    coords = {'latitude': lat, 'longitude': lon}
+    return coords
 
 def get_telem():
     '''
@@ -21,7 +42,7 @@ def send_telem(coords):
     '''
     sends telemetry data to pixhawk from pi
     '''
-    altitude = altitude_handle()
+    altitude = altitude_handle('surveillance')
     # Send telemetry data to Pixhawk
     msg = master.mav.mission_item_send(
         0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
@@ -60,11 +81,15 @@ def receive_telem():
         # Sleep for a short duration to avoid busy-waiting
         time.sleep(0.1)
     
-def altitude_handle():
+def altitude_handle(phase):
     '''
     handles the altitude inputs to the plane
     '''
-    return 45.72  #Altitudes are in meters
+    #Altitudes are in meters
+    if phase == 'search':
+        return 76.2
+    if phase == 'surveillance':
+        return 45.72  
 
 def main():
     ''' Main Func '''
