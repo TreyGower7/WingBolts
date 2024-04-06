@@ -13,10 +13,12 @@ def projectile_range(v_x, v_y, H):
     w = 1 # wind speed (relative to ground)
 
     # these are constant parameters that should be stored beforehand
-    rho = 1.225 # density of air
-    Cd = 0 # drag coefficient
-    A = 0 # surface area of the payload
-    m = 1 # payload mass
+    rho = 1.225 # kg/m density of air
+    Cd = 0 # drag coefficient, proportional to airspeed?
+
+    # A does not include the grid fins yet
+    A = 0.0157 # surface area of the payload in m^2 (2 in diameter, 3 in length)
+    m = 0.181 # payload mass in kg (0.4 lb)
 
     q = 0.5*rho*Cd*A
     dt = 0.02 # time interval

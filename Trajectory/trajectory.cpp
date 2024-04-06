@@ -8,8 +8,8 @@ using namespace std;
 float projectile_range(float v_x, float v_y, float H) {
     float rho = 1.225;
     float Cd = 0;
-    float A = 0;
-    float m = 1;
+    float A = 0.0157; // surface area of the payload without grid fins
+    float m = 0.181; // mass of payload
 
     float q = 0.5 * rho * Cd * A;
     float dt = 0.02;
@@ -73,7 +73,7 @@ int main(){
     float H = 1;
     float v_x = 1;
     float v_y = 1;
-    
+
     float target_long = 1;
     float target_lat = 1;
     float current_long = 1;
