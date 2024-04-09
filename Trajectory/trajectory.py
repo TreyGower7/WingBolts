@@ -1,3 +1,5 @@
+import time
+from pymavlink import mavutil
 import numpy as np
 import math
 
@@ -6,8 +8,6 @@ def projectile_range(v_x, v_y, H):
     Using random numbers for the variables as placeholders until we find out how to get the data from Pixhawk
     This is a SUPER rough code straight from the research paper
     """
-    # all of the following are recorded at a given instant and should come from Pixhawk
-    # idk why the paper said it needed these? not used in the code?
 
     u = 1 # aircraft velocity (relative to ground) (groundspeed?)
     w = 1 # wind speed (relative to ground)
@@ -29,6 +29,11 @@ def projectile_range(v_x, v_y, H):
     y = 0
     t = 0
     while (iters < N):
+
+        if (y >= H):
+            R = x
+            break
+
         a_x = -(q/m)*v_x**2
         a_y = 9.81 - (q/m)*v_y**2
 
@@ -40,11 +45,7 @@ def projectile_range(v_x, v_y, H):
 
         t += dt # total time, don't know what this is useful for?
     
-        if (y == H):
-            R = x
-            break
-        else:
-            continue
+
         iters += 1
 
     return(R,t)
@@ -68,6 +69,7 @@ def geo_to_cartesian(latitude, longitude):
 
 
 if __name__ == "__main__":
+    altitude = 45.72 # surveillance phase
     print(projectile_range())
 
 
