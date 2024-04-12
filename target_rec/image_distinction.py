@@ -6,6 +6,7 @@ from sklearn.svm import SVC
 import os
 import psutil
 import time
+from matplotlib import pyplot as plt
 
 def load_and_train(directory):
     """
@@ -25,6 +26,45 @@ def load_and_train(directory):
     clf = SVC(kernel='linear')
     clf.fit(np.array(X), np.array(y))
     return clf
+
+def template_match():
+    template = cv2.imread('templates/happy_template.jpg')
+    print(os.path.exists('templates/happy_template.jpg'))
+    # template = cv2.LoadImage("templates/happy_template.jpg")
+
+    # Load the video feed
+    cap = cv2.VideoCapture(0)  # Use 0 for default webcam, or specify a video file
+
+    # Get the width and height of the template image
+    h, w, _ = template.shape
+
+    while True:
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        # Perform template matching
+        res = cv2.matchTemplate(frame, template, cv2.TM_CCOEFF_NORMED)
+
+        # Set a threshold to consider a match
+        threshold = 0.3
+        loc = np.where(res >= threshold)
+
+        # Draw a rectangle around the matched area
+        for pt in zip(*loc[::-1]):
+            cv2.rectangle(frame, pt, (pt[0] + w, pt[1] + h), (0, 255, 255), 2)
+
+        # Display the resulting frame
+        cv2.imshow('Video', frame)
+
+        # Exit loop if 'q' is pressed
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # Release the capture and close all windows
+    cap.release()
+    cv2.destroyAllWindows()
 
 def detect_smiley(clf):
     # Define the parameters for circle detection
@@ -94,10 +134,11 @@ def measure_cpu_usage(duration):
 
 def main():
     # train data and test accuracy
-    clf = load_and_train('smiley_faces_dataset')
+    # clf = load_and_train('smiley_faces_dataset')
 
     # detect from live video feed
-    detect_smiley(clf)
+    # detect_smiley(clf)
+    template_match()
 
     # Measure CPU usage for 10 seconds
     avg_cpu_usage = measure_cpu_usage(10)
