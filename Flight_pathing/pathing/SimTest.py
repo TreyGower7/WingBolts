@@ -3,11 +3,10 @@ import random
 import time
 
 # Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyUSB0'  # or '/dev/ttyAMA0' for UART connection
-baudrate = 115200  # or whatever baudrate your connection uses
+connection_string = 'udp:127.0.0.1:14550' # sim connection
 
 # Connect to the Pixhawk
-master = mavutil.mavlink_connection(connection_string, baud=baudrate)
+master = mavutil.mavlink_connection(connection_string)
 
 
 def random_coords(domain):
@@ -87,6 +86,7 @@ def receive_telem():
             if msg.get_type() == 'GLOBAL_POSITION_INT':
                 # Example: Print latitude, longitude, and altitude
                 print("Global Position: Lat={}, Lon={}, Alt={}".format(msg.lat, msg.lon, msg.alt))
+                break
             elif msg.get_type() == 'STATUSTEXT':
                 # Example: Print status text messages
                 print("Status Text: {}".format(msg.text))
@@ -143,13 +143,13 @@ def main():
             phase_search = False
              #first random point
             coords = get_telem()
-            send_telem(coords)
+            send_telem(coords, 'surveillance')
             break
         
     while phase_surveillance == True:
-        check_waypoint(waypoints)
+        check_waypoint(coords)
         coords = get_telem()
-        send_telem(coords)
+        send_telem(coords, 'surveillance')
 
         time.sleep(5)  #Adjust as needed for the update frequency
 
