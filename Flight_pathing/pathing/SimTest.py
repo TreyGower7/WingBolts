@@ -3,6 +3,7 @@ sys.path.append(r"C:\Users\gower\AppData\Local\Packages\PythonSoftwareFoundation
 from pymavlink import mavutil
 import random
 import time
+import math
 
 
 # Set the connection parameters (change accordingly)
@@ -66,11 +67,16 @@ def send_telem(coords, phase):
     '''
     sends telemetry data to pixhawk from pi
     '''
+
+    MAX_BANK_ANGLE = 30  #Maximum allowable bank angle in degrees
+    #Convert maximum bank angle to radians for MAVLink parameter
+    max_bank_angle_rad = MAX_BANK_ANGLE * (math.pi / 180) #Maximum allowable bank angle in radians
+
     altitude = altitude_handle(phase)
     # Send telemetry data to Pixhawk
     msg = master.mav.mission_item_send(
         0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0,
+        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
         coords['latitude'], coords['longitude'], altitude)
     master.mav.send(msg)
 
@@ -111,21 +117,42 @@ def altitude_handle(phase):
     if phase == 'surveillance':
         return 45.72  
 
-def check_waypoint(waypoints):
+
+def haversine_check(waypoints):
     '''
-    Calulates how close plane is to waypoint
+    Calulates how close plane is to waypoint using angular seperation and the earths radius
     '''
+    R = 6371.0  # Radius of the Earth in kilometers
     #get current position
     msg = receive_telem()
     current_lat = msg.lat
     current_lon = msg.lon
+    waypoint_lat = waypoints[0]['lat']
+    waypoint_lon = waypoints[0]['lon']
 
-    if (abs(current_lat - waypoints[0][0]) < 0.0001 and 
-        abs(current_lon - waypoints[0][1]) < 0.0001):
+    # Convert latitude and longitude from degrees to radians
+    current_lat = math.radians(current_lat)
+    current_lon = math.radians(current_lon)
+    waypoint_lat = math.radians(waypoint_lat)
+    waypoint_lon = math.radians(waypoint_lon)
+
+    # Calculate the differences in latitude and longitude
+    dlat = waypoint_lat - current_lat
+    dlon = waypoint_lon - current_lon
+
+    # Apply the Haversine formula
+    a = math.sin(dlat / 2)**2 + math.cos(current_lat) * math.cos(waypoint_lat) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c
+    
+
+    if distance < 0.001:
         print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
         waypoints.pop(0)  # Remove the reached waypoint
-    return waypoints
     
+    return waypoints
+
+
 def main():
     ''' Main Func '''
     #surveillance phase initially true to start
@@ -136,7 +163,7 @@ def main():
     waypoints = Search_zigzag()
     while phase_search == True:
         #constantly updating waypoints
-        waypoints = check_waypoint(waypoints)
+        waypoints = haversine_check(waypoints)
 
         #***Check target recognition for waypoints of objects***
 
@@ -150,7 +177,7 @@ def main():
             break
         
     while phase_surveillance == True:
-        check_waypoint(coords)
+        haversine_check(coords)
         coords = get_telem()
         send_telem(coords, 'surveillance')
 
