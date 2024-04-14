@@ -84,11 +84,10 @@ def send_telem(coords, phase):
 
     altitude = altitude_handle(phase)
     # Send telemetry data to Pixhawk
-    msg = master.mav.mission_item_send(
+    master.mav.mission_item_send(
         0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
         coords['latitude'], coords['longitude'], altitude)
-    master.mav.send(msg)
 
 def receive_telem():
     '''
