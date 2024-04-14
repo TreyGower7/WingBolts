@@ -36,8 +36,9 @@ def Search_zigzag():
     '''
     Search phase for targets
     '''
-    alt = 76.2 #meters
-    phase = 'surveillance'
+    phase = 'search'
+    altitude = altitude_handle(phase)
+
 
     waypoints = [
     {"lat":   30.323221, "lon":  -97.602798},
@@ -51,7 +52,7 @@ def Search_zigzag():
     for i in range(len(waypoints)):
         coords = {'latitude': waypoints[i]['lat'], 'longitude': waypoints[i]['lon']}
         send_telem(coords, phase)
-        print(f"Sending waypoint {i+1}: ({waypoints[i]['lat']}, {waypoints[i]['lon']})")
+        print(f"Sending waypoint {i+1}: ({waypoints[i]['lat']}, {waypoints[i]['lon']}, {altitude})")
     #Set vehicle mode to Auto (numerical value for Auto mode is 4)
     print("Setting vehicle mode to Auto...")
     master.mav.set_mode_send(
@@ -88,6 +89,8 @@ def send_telem(coords, phase):
         0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
         coords['latitude'], coords['longitude'], altitude)
+    print(f"Sending waypoint: ({ coords['latitude']}, {coords['longitude']}, {altitude})")
+
 
 def receive_telem():
     '''
@@ -165,33 +168,32 @@ def haversine_check(waypoints):
 def main():
     ''' Main Func '''
     #surveillance phase initially true to start
-    phase_search = True
-    phase_surveillance = True
-
+    phase = 'search'
     #Populate Coordinates for Search phase
     waypoints = Search_zigzag()
-    while phase_search == True:
+    while phase == 'search':
         #constantly updating waypoints
         print("Checking Waypoint Progress")
         waypoints = haversine_check(waypoints)
+        time.sleep(.2)  #Adjust as needed for the update frequency
 
         #***Check target recognition for waypoints of objects***
 
         #once zig zag is complete we go to next phase
         if len(waypoints) == 0:
             print("All waypoints reached")
-            phase_search = False
+            phase = 'surveillance'
              #first random point
             coords = get_telem()
-            send_telem(coords, 'surveillance')
+            send_telem(coords, phase)
             break
         
-    while phase_surveillance == True:
+    while phase == 'surveillance':
         haversine_check(coords)
         coords = get_telem()
-        send_telem(coords, 'surveillance')
+        send_telem(coords, phase)
 
-        time.sleep(5)  #Adjust as needed for the update frequency
+        time.sleep(.2)  #Adjust as needed for the update frequency
 
 if __name__ == "__main__":
     ''' This is executed when run from the command line '''
