@@ -8,7 +8,8 @@ mission_basic.py: Example demonstrating basic mission operations including creat
 Full documentation is provided at http://python.dronekit.io/examples/mission_basic.html
 """
 from __future__ import print_function
-
+import sys
+sys.path.append(r"C:\Users\gower\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages")
 from dronekit import connect, VehicleMode, LocationGlobalRelative, LocationGlobal, Command
 import time
 import math
