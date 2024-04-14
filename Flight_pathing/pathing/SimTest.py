@@ -53,13 +53,6 @@ def Search_zigzag():
         coords = {'latitude': waypoints[i]['lat'], 'longitude': waypoints[i]['lon']}
         send_telem(coords, phase)
         print(f"Sending waypoint {i+1}: ({waypoints[i]['lat']}, {waypoints[i]['lon']}, {altitude})")
-    #Set vehicle mode to Auto (numerical value for Auto mode is 4)
-    print("Setting vehicle mode to Auto...")
-    master.mav.set_mode_send(
-        master.target_system,
-        mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
-        4  # Numerical value for Auto mode
-    )
 
     print("Waypoints sent to Mission Planner.")
         
@@ -119,6 +112,26 @@ def receive_telem():
         
         return msg
     
+def check_AUTO():
+    '''
+    Checks if the mode is in autopilot
+    '''
+    # Wait for response
+    while True:
+        msg = master.recv_match(type='HEARTBEAT', blocking=True)
+        if msg:
+            current_mode = mavutil.mode_string_v10(msg)
+            break
+    
+    # Check if current mode is "AUTO"
+    if current_mode == "AUTO":
+        print("Mode is autopilot (AUTO)")
+        return 'AUTO'
+    else:
+        print("Mode is not autopilot")
+        return None
+
+    
 def altitude_handle(phase):
     '''
     handles the altitude inputs to the plane
@@ -156,27 +169,46 @@ def haversine_check(waypoints):
     a = math.sin(dlat / 2)**2 + math.cos(current_lat) * math.cos(waypoint_lat) * math.sin(dlon / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     distance = R * c
-    
 
-    if distance < 0.001:
+    if distance < 0.003048: #10 feet
         print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
         waypoints.pop(0)  # Remove the reached waypoint
+    else:
+        print(f'Distance from waypoint: {distance}')
     
     return waypoints
 
 
 def main():
     ''' Main Func '''
-    #surveillance phase initially true to start
-    phase = 'search'
-    #Populate Coordinates for Search phase
-    waypoints = Search_zigzag()
+    phase = None
+    mode = None
+
+    #Ensures we manually set the mode to AUTO
+    while mode is None:
+        mode = check_AUTO()
+        if mode == 'AUTO':
+            #Populate Coordinates for Search phase
+            waypoints = Search_zigzag()
+            phase = 'search'
+            break
+
     while phase == 'search':
+        #Auto Pilot Check
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
         #constantly updating waypoints
         print("Checking Waypoint Progress")
         waypoints = haversine_check(waypoints)
         time.sleep(.2)  #Adjust as needed for the update frequency
-
+        
         #***Check target recognition for waypoints of objects***
 
         #once zig zag is complete we go to next phase
@@ -189,6 +221,15 @@ def main():
             break
         
     while phase == 'surveillance':
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
         haversine_check(coords)
         coords = get_telem()
         send_telem(coords, phase)
