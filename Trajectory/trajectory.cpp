@@ -7,7 +7,7 @@ using namespace std;
 
 float projectile_range(float v_x, float v_y, float H) {
     float rho = 1.225;
-    float Cd = 0;
+    float Cd = 0.82;
     float A = 0.0157; // surface area of the payload without grid fins
     float m = 0.181; // mass of payload
 
@@ -19,9 +19,14 @@ float projectile_range(float v_x, float v_y, float H) {
     float x = 0;
     float y = 0;
     float t = 0;
-    float R = 0;
+    float R;
 
     while (iters < N){
+        if(y >= H){
+            R = x;
+            break;
+        }
+
         float a_x = -(q/m)*v_x*v_x;
         float a_y = 9.81 - (q/m)*v_y*v_y;
 
@@ -33,10 +38,6 @@ float projectile_range(float v_x, float v_y, float H) {
 
         t += dt;
 
-        if(y == H){
-            R = x;
-            break;
-        }
         iters++;
     }
     return R;
@@ -70,7 +71,7 @@ vector<float> geo_to_cartesian(float latitude, float longitude){
 }
 
 int main(){
-    float H = 1;
+    float H = 45.72;
     float v_x = 1;
     float v_y = 1;
 

@@ -3,12 +3,11 @@ import random
 import time
 
 # Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyUSB0'  # or '/dev/ttyAMA0' for UART connection
-baudrate = 115200  # or whatever baudrate your connection uses
+connection_string = '/dev/ttyAMA0' # UART connection
+baudrate = 57600   
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
-
 
 
 def random_coords(domain):
@@ -30,6 +29,7 @@ def random_coords(domain):
     coords = {'latitude': lat, 'longitude': lon}
     return coords
 
+
 def get_telem():
     '''
     Gets Telemetry data from Pixhawk
@@ -38,11 +38,11 @@ def get_telem():
     coords = random_coords(domain)
     return coords
 
-def send_telem(coords):
+def send_telem(coords, phase):
     '''
     sends telemetry data to pixhawk from pi
     '''
-    altitude = altitude_handle('surveillance')
+    altitude = altitude_handle(phase)
     # Send telemetry data to Pixhawk
     msg = master.mav.mission_item_send(
         0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
@@ -68,18 +68,13 @@ def receive_telem():
             elif msg.get_type() == 'STATUSTEXT':
                 # Example: Print status text messages
                 print("Status Text: {}".format(msg.text))
-            # Add more conditions to handle other message types as needed
-            # elif msg.get_type() == 'SOME_OTHER_MESSAGE_TYPE':
-            #    ...
             
-            # Example: Check if message is a heartbeat
-            if msg.get_type() == 'HEARTBEAT':
-                print("Received heartbeat from system {} component {}".format(msg.get_srcSystem(), msg.get_srcComponent()))
-                
-        # Add other logic here if needed
         
+                        
         # Sleep for a short duration to avoid busy-waiting
         time.sleep(0.1)
+        
+        return msg
     
 def altitude_handle(phase):
     '''
@@ -87,17 +82,7 @@ def altitude_handle(phase):
     '''
     #Altitudes are in meters
     if phase == 'search':
-        return 76.2
+        return 91.44
     if phase == 'surveillance':
         return 45.72  
-
-def main():
-    ''' Main Func '''
-    while True:
-        coords = get_telem()
-        send_telem(coords)
-        time.sleep(5)  #Adjust as needed for the update frequency
-
-if __name__ == "__main__":
-    ''' This is executed when run from the command line '''
-    main()
+    
