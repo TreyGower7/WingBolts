@@ -51,6 +51,16 @@ def Search_zigzag():
     for i in range(len(waypoints)):
         coords = {'latitude': waypoints[i]['lat'], 'longitude': waypoints[i]['lon']}
         send_telem(coords, phase)
+        print(f"Sending waypoint {i+1}: ({waypoints[i]['lat']}, {waypoints[i]['lon']})")
+    #Set vehicle mode to Auto (numerical value for Auto mode is 4)
+    print("Setting vehicle mode to Auto...")
+    master.mav.set_mode_send(
+        master.target_system,
+        mavutil.mavlink.MAV_MODE_FLAG_CUSTOM_MODE_ENABLED,
+        4  # Numerical value for Auto mode
+    )
+
+    print("Waypoints sent to Mission Planner.")
         
     return waypoints
 
@@ -163,6 +173,7 @@ def main():
     waypoints = Search_zigzag()
     while phase_search == True:
         #constantly updating waypoints
+        print("Checking Waypoint Progress")
         waypoints = haversine_check(waypoints)
 
         #***Check target recognition for waypoints of objects***
