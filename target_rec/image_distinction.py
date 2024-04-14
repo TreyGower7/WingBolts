@@ -28,6 +28,14 @@ def load_and_train(directory):
     return clf
 
 def template_match():
+    # Define the parameters for circle detection
+    dp = 1  # Inverse ratio of the accumulator resolution to the image resolution
+    minDist = 100  # Minimum distance between the centers of detected circles
+    param1 = 280  # Upper threshold for the internal Canny edge detector
+    param2 = 35   # Threshold for center detection
+    minRadius = 5  # Minimum radius to be detected
+    maxRadius = 100  # Maximum radius to be detected
+
     template = cv2.imread('templates/happy_template.jpg')
     print(os.path.exists('templates/happy_template.jpg'))
     # template = cv2.LoadImage("templates/happy_template.jpg")
@@ -47,13 +55,25 @@ def template_match():
         # Perform template matching
         res = cv2.matchTemplate(frame, template, cv2.TM_CCOEFF_NORMED)
 
+        # Convert the frame to grayscale
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Detect circles in the frame
+        circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT, dp, minDist,
+                               param1=param1, param2=param2, minRadius=minRadius, maxRadius=maxRadius)
+
         # Set a threshold to consider a match
-        threshold = 0.3
+        threshold = 0.4
         loc = np.where(res >= threshold)
 
-        # Draw a rectangle around the matched area
-        for pt in zip(*loc[::-1]):
-            cv2.rectangle(frame, pt, (pt[0] + w, pt[1] + h), (0, 255, 255), 2)
+                # For each detected face, classify it as happy or sad
+        if circles is not None:
+            circles = circles[0, :].astype("int")
+                
+            # Draw a rectangle around the matched area
+            for pt in zip(*loc[::-1]):
+                cv2.rectangle(frame, pt, (pt[0] + w, pt[1] + h), (0, 255, 255), 2)
+
 
         # Display the resulting frame
         cv2.imshow('Video', frame)
@@ -70,7 +90,7 @@ def detect_smiley(clf):
     # Define the parameters for circle detection
     dp = 1  # Inverse ratio of the accumulator resolution to the image resolution
     minDist = 100  # Minimum distance between the centers of detected circles
-    param1 = 280  # Upper threshold for the internal Canny edge detector
+    param1 = 350  # Upper threshold for the internal Canny edge detector
     param2 = 35   # Threshold for center detection
     minRadius = 5  # Minimum radius to be detected
     maxRadius = 100  # Maximum radius to be detected
@@ -134,11 +154,11 @@ def measure_cpu_usage(duration):
 
 def main():
     # train data and test accuracy
-    # clf = load_and_train('smiley_faces_dataset')
+    clf = load_and_train('smiley_faces_dataset')
 
     # detect from live video feed
-    # detect_smiley(clf)
-    template_match()
+    detect_smiley(clf)
+    # template_match()
 
     # Measure CPU usage for 10 seconds
     avg_cpu_usage = measure_cpu_usage(10)
