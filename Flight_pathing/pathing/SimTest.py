@@ -1,13 +1,16 @@
+import sys
+sys.path.append(r"C:\Users\gower\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages")
 from pymavlink import mavutil
 import random
 import time
+import math
+
 
 # Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyUSB0'  # or '/dev/ttyAMA0' for UART connection
-baudrate = 115200  # or whatever baudrate your connection uses
+connection_string = 'udp:127.0.0.1:14550' # sim connection
 
 # Connect to the Pixhawk
-master = mavutil.mavlink_connection(connection_string, baud=baudrate)
+master = mavutil.mavlink_connection(connection_string)
 
 
 def random_coords(domain):
@@ -33,8 +36,9 @@ def Search_zigzag():
     '''
     Search phase for targets
     '''
-    alt = 76.2 #meters
-    phase = 'surveillance'
+    phase = 'search'
+    altitude = altitude_handle(phase)
+
 
     waypoints = [
     {"lat":   30.323221, "lon":  -97.602798},
@@ -48,6 +52,9 @@ def Search_zigzag():
     for i in range(len(waypoints)):
         coords = {'latitude': waypoints[i]['lat'], 'longitude': waypoints[i]['lon']}
         send_telem(coords, phase)
+        print(f"Sending waypoint {i+1}: ({waypoints[i]['lat']}, {waypoints[i]['lon']}, {altitude})")
+
+    print("Waypoints sent to Mission Planner.")
         
     return waypoints
 
@@ -64,13 +71,19 @@ def send_telem(coords, phase):
     '''
     sends telemetry data to pixhawk from pi
     '''
+
+    MAX_BANK_ANGLE = 30  #Maximum allowable bank angle in degrees
+    #Convert maximum bank angle to radians for MAVLink parameter
+    max_bank_angle_rad = MAX_BANK_ANGLE * (math.pi / 180) #Maximum allowable bank angle in radians
+
     altitude = altitude_handle(phase)
     # Send telemetry data to Pixhawk
-    msg = master.mav.mission_item_send(
+    master.mav.mission_item_send(
         0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0,
+        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
         coords['latitude'], coords['longitude'], altitude)
-    master.mav.send(msg)
+    print(f"Sending waypoint: ({ coords['latitude']}, {coords['longitude']}, {altitude})")
+
 
 def receive_telem():
     '''
@@ -87,6 +100,7 @@ def receive_telem():
             if msg.get_type() == 'GLOBAL_POSITION_INT':
                 # Example: Print latitude, longitude, and altitude
                 print("Global Position: Lat={}, Lon={}, Alt={}".format(msg.lat, msg.lon, msg.alt))
+                break
             elif msg.get_type() == 'STATUSTEXT':
                 # Example: Print status text messages
                 print("Status Text: {}".format(msg.text))
@@ -98,6 +112,26 @@ def receive_telem():
         
         return msg
     
+def check_AUTO():
+    '''
+    Checks if the mode is in autopilot
+    '''
+    # Wait for response
+    while True:
+        msg = master.recv_match(type='HEARTBEAT', blocking=True)
+        if msg:
+            current_mode = mavutil.mode_string_v10(msg)
+            break
+    
+    # Check if current mode is "AUTO"
+    if current_mode == "AUTO":
+        print("Mode is autopilot (AUTO)")
+        return 'AUTO'
+    else:
+        print("Mode is not autopilot")
+        return None
+
+    
 def altitude_handle(phase):
     '''
     handles the altitude inputs to the plane
@@ -108,50 +142,99 @@ def altitude_handle(phase):
     if phase == 'surveillance':
         return 45.72  
 
-def check_waypoint(waypoints):
+
+def haversine_check(waypoints):
     '''
-    Calulates how close plane is to waypoint
+    Calulates how close plane is to waypoint using angular seperation and the earths radius
     '''
+    R = 6371.0  # Radius of the Earth in kilometers
     #get current position
     msg = receive_telem()
     current_lat = msg.lat
     current_lon = msg.lon
+    waypoint_lat = waypoints[0]['lat']
+    waypoint_lon = waypoints[0]['lon']
 
-    if (abs(current_lat - waypoints[0][0]) < 0.0001 and 
-        abs(current_lon - waypoints[0][1]) < 0.0001):
+    # Convert latitude and longitude from degrees to radians
+    current_lat = math.radians(current_lat)
+    current_lon = math.radians(current_lon)
+    waypoint_lat = math.radians(waypoint_lat)
+    waypoint_lon = math.radians(waypoint_lon)
+
+    # Calculate the differences in latitude and longitude
+    dlat = waypoint_lat - current_lat
+    dlon = waypoint_lon - current_lon
+
+    # Apply the Haversine formula
+    a = math.sin(dlat / 2)**2 + math.cos(current_lat) * math.cos(waypoint_lat) * math.sin(dlon / 2)**2
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+    distance = R * c
+
+    if distance < 0.003048: #10 feet
         print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
         waypoints.pop(0)  # Remove the reached waypoint
-    return waypoints
+    else:
+        print(f'Distance from waypoint: {distance}')
     
+    return waypoints
+
+
 def main():
     ''' Main Func '''
-    #surveillance phase initially true to start
-    phase_search = True
-    phase_surveillance = True
+    phase = None
+    mode = None
 
-    #Populate Coordinates for Search phase
-    waypoints = Search_zigzag()
-    while phase_search == True:
+    #Ensures we manually set the mode to AUTO
+    while mode is None:
+        mode = check_AUTO()
+        if mode == 'AUTO':
+            #Populate Coordinates for Search phase
+            waypoints = Search_zigzag()
+            phase = 'search'
+            break
+
+    while phase == 'search':
+        #Auto Pilot Check
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
         #constantly updating waypoints
-        waypoints = check_waypoint(waypoints)
-
+        print("Checking Waypoint Progress")
+        waypoints = haversine_check(waypoints)
+        time.sleep(.2)  #Adjust as needed for the update frequency
+        
         #***Check target recognition for waypoints of objects***
 
         #once zig zag is complete we go to next phase
         if len(waypoints) == 0:
             print("All waypoints reached")
-            phase_search = False
+            phase = 'surveillance'
              #first random point
             coords = get_telem()
-            send_telem(coords)
+            send_telem(coords, phase)
             break
         
-    while phase_surveillance == True:
-        check_waypoint(waypoints)
+    while phase == 'surveillance':
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
+        haversine_check(coords)
         coords = get_telem()
-        send_telem(coords)
+        send_telem(coords, phase)
 
-        time.sleep(5)  #Adjust as needed for the update frequency
+        time.sleep(.2)  #Adjust as needed for the update frequency
 
 if __name__ == "__main__":
     ''' This is executed when run from the command line '''

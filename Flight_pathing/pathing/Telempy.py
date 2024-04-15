@@ -3,8 +3,8 @@ import random
 import time
 
 # Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyUSB0'  # or '/dev/ttyAMA0' for UART connection
-baudrate = 115200  # or whatever baudrate your connection uses
+connection_string = '/dev/ttyAMA0' # UART connection
+baudrate = 57600   
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
