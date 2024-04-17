@@ -7,6 +7,11 @@ import os
 import psutil
 import time
 from matplotlib import pyplot as plt
+# print(os.path.dirname('psutil').__file__)
+import site
+print(site.getsitepackages())
+
+
 import tensorflow as tf
 
 model = tf.keras.models.load_model("models/cnn_first.keras")
@@ -68,3 +73,9 @@ def detect_smiley():
     # Release video capture and close all windows
     cap.release()
     cv2.destroyAllWindows()
+
+def main():
+    detect_smiley()
+
+if __name__ == "__main__":
+    main()
