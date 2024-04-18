@@ -1,5 +1,6 @@
-from Flight_pathing.pathing.Search import Search_zigzag
-from Flight_pathing.pathing.CompanionTelem import send_telem, receive_telem, haversine_check, get_telem, check_AUTO
+from Flight_pathing.pathing.Phases import Search_zigzag
+from Flight_pathing.pathing.Sorting_Distance import haversine_check, sort_obj_waypoints, drop_line
+from Flight_pathing.pathing.Telempy import send_telem, receive_telem, haversine_check, get_telem, check_AUTO
 import math
 import time
 

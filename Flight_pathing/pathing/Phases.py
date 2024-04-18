@@ -1,7 +1,7 @@
 from pymavlink import mavutil
 import random
 import time
-from Flight_pathing.pathing.Telempy import send_telem, receive_telem
+from Flight_pathing.pathing.Telempy import send_telem
 
 
 def Search_zigzag(master):
@@ -22,10 +22,6 @@ def Search_zigzag(master):
 
     return waypoints
 
-def main():
-
-
-if 
 
 
 
