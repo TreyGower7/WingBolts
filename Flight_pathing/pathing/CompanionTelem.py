@@ -1,5 +1,3 @@
-import sys
-sys.path.append(r"C:\Users\gower\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.12_qbz5n2kfra8p0\LocalCache\local-packages\Python312\site-packages")
 from pymavlink import mavutil
 import random
 import time
@@ -29,7 +27,7 @@ def random_coords(domain):
     min_lat, max_lat, min_lon, max_lon = domain
     lat = random.uniform(min_lat, max_lat)
     lon = random.uniform(min_lon, max_lon)
-    coords = {'latitude': lat, 'longitude': lon}
+    coords = {'lat': lat, 'lon': lon}
     return coords
 
 def Search_zigzag():
@@ -59,7 +57,7 @@ def Search_zigzag():
     return waypoints
 
 
-def get_telem():
+def get_obj_coords():
     '''
     Gets Telemetry data from Pixhawk
     '''
@@ -131,7 +129,7 @@ def check_AUTO():
         print("Mode is not autopilot")
         return None
 
-    
+#*******Tested and Working*******  
 def altitude_handle(phase):
     '''
     handles the altitude inputs to the plane
@@ -142,19 +140,27 @@ def altitude_handle(phase):
     if phase == 'surveillance':
         return 45.72  
 
-
-def haversine_check(waypoints):
+#*******Tested and Working*******
+def haversine_check(waypoints, use, ref_waypoint):
     '''
     Calulates how close plane is to waypoint using angular seperation and the earths radius
     '''
     R = 6371.0  # Radius of the Earth in kilometers
-    #get current position
-    msg = receive_telem()
-    current_lat = msg.lat
-    current_lon = msg.lon
-    waypoint_lat = waypoints[0]['lat']
-    waypoint_lon = waypoints[0]['lon']
 
+    if use == 'Update_waypoints':
+        #get current position
+        msg = receive_telem()
+        current_lat = msg.lat
+        current_lon = msg.lon
+        waypoint_lat = waypoints[0]['lat']
+        waypoint_lon = waypoints[0]['lon']
+    if use == 'Distance':
+        #only requires one point for input
+        current_lat = ref_waypoint['lat']
+        current_lon = ref_waypoint['lon']
+        waypoint_lat = waypoints['lat']
+        waypoint_lon = waypoints['lon']
+       
     # Convert latitude and longitude from degrees to radians
     current_lat = math.radians(current_lat)
     current_lon = math.radians(current_lon)
@@ -170,20 +176,42 @@ def haversine_check(waypoints):
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     distance = R * c
 
-    if distance < 0.003048: #10 feet
-        print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
-        waypoints.pop(0)  # Remove the reached waypoint
-    else:
-        print(f'Distance from waypoint: {distance}')
+    if use == 'Update_waypoints':
+        if distance < 0.003048: #10 feet
+            print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
+            waypoints.pop(0)  # Remove the reached waypoint
+        else:
+            print(f'Distance from waypoint: {distance}')
+        return waypoints
     
-    return waypoints
+    if use == 'Distance':
+        return distance
+
+#*******Tested and Working*******
+def sort_obj_waypoints(reference_waypoint, Obj_waypoints): 
+    '''
+    sort the waypoints of the objects from closest to farthest
+    '''
+    
+    #Calculate distances and store them along with object waypoints
+    obj_distances = [(waypoint, haversine_check(waypoint, 'Distance', reference_waypoint)) for waypoint in Obj_waypoints]
+    
+    #Sort the object waypoints based on distances
+    sorted_obj = [waypoint for waypoint, _ in sorted(obj_distances, key=lambda x: x[1])]
+    
+    return sorted_obj
+
+def drop_line():
+    '''
+    calculates optimal drop line for targets
+    '''
 
 
 def main():
     ''' Main Func '''
     phase = None
     mode = None
-
+    Obj_waypoints = []
     #Ensures we manually set the mode to AUTO
     while mode is None:
         mode = check_AUTO()
@@ -192,6 +220,9 @@ def main():
             waypoints = Search_zigzag()
             phase = 'search'
             break
+
+    #saves last waypoint for sorting alg
+    last_waypoint= waypoints[-1]
 
     while phase == 'search':
         #Auto Pilot Check
@@ -206,21 +237,32 @@ def main():
                     break
         #constantly updating waypoints
         print("Checking Waypoint Progress")
-        waypoints = haversine_check(waypoints)
+        waypoints = haversine_check(waypoints, 'Update_waypoints', None)
         time.sleep(.2)  #Adjust as needed for the update frequency
         
+        #*************
         #***Check target recognition for waypoints of objects***
+        #Obj_waypoints.append(object_coords()) Something like this
+        #returns: {'lat': lat, 'lon': lon} of object
+        #*************
 
         #once zig zag is complete we go to next phase
         if len(waypoints) == 0:
             print("All waypoints reached")
             phase = 'surveillance'
-             #first random point
-            coords = get_telem()
-            send_telem(coords, phase)
+                    #Insert waypoints of objects 
+            #****Remember to remove for loop****
+            for i in range(6): #generates 6 random objects
+                Obj_waypoints.append(get_obj_coords())
+
+            #Sorting Algorithmn
+            sort_obj_waypoints(last_waypoint, Obj_waypoints)
+            send_telem(Obj_waypoints, phase)
             break
-        
+    
+
     while phase == 'surveillance':
+        #Auto Pilot Check
         mode = check_AUTO()
         if mode != 'AUTO':
             while mode != 'AUTO':
@@ -230,9 +272,20 @@ def main():
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
                     break
-        haversine_check(coords)
-        coords = get_telem()
-        send_telem(coords, phase)
+
+        #constantly updating waypoints
+        print("Checking Waypoint Progress")
+        Obj_waypoints = haversine_check(Obj_waypoints,'Update_waypoints', None)
+        time.sleep(.2)  #Adjust as needed for the update frequency
+
+        #once zig zag is complete we go to next phase
+        if len(Obj_waypoints) == 0:
+            print("All Object Waypoints Reached")
+            phase = 'drop'
+            break
+        
+    while phase == 'drop':
+
 
         time.sleep(.2)  #Adjust as needed for the update frequency
 

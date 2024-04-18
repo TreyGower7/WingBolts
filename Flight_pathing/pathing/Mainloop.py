@@ -1,6 +1,5 @@
-#import Listen
 from Flight_pathing.pathing.Search import Search_zigzag
-from Flight_pathing.pathing.Telempy import send_telem, receive_telem, haversine_check
+from Flight_pathing.pathing.CompanionTelem import send_telem, receive_telem, haversine_check, get_telem, check_AUTO
 import math
 import time
 
@@ -14,33 +13,61 @@ __author__ = "Trey Gower"
 
 def main():
     ''' Main Func '''
-    #surveillance phase initially true to start
-    phase_search = True
-    phase_surveillance = True
+    phase = None
+    mode = None
 
-    #Populate Coordinates for Search phase
-    waypoints = Search_zigzag()
-    while phase_search == True:
+    #Ensures we manually set the mode to AUTO
+    while mode is None:
+        mode = check_AUTO()
+        if mode == 'AUTO':
+            #Populate Coordinates for Search phase
+            waypoints = Search_zigzag()
+            phase = 'search'
+            break
+
+    while phase == 'search':
+        #Auto Pilot Check
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
         #constantly updating waypoints
-        waypoints = check_waypoint(waypoints)
-
+        print("Checking Waypoint Progress")
+        waypoints = haversine_check(waypoints)
+        time.sleep(.2)  #Adjust as needed for the update frequency
+        
         #***Check target recognition for waypoints of objects***
 
         #once zig zag is complete we go to next phase
         if len(waypoints) == 0:
             print("All waypoints reached")
-            phase_search = False
+            phase = 'surveillance'
              #first random point
             coords = get_telem()
-            send_telem(coords)
+            send_telem(coords, phase)
             break
         
-    while phase_surveillance == True:
-        check_w(waypoints)
+    while phase == 'surveillance':
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
+        haversine_check(coords)
         coords = get_telem()
-        send_telem(coords)
+        send_telem(coords, phase)
 
-        time.sleep(5)  #Adjust as needed for the update frequency
+        time.sleep(.2)  #Adjust as needed for the update frequency
+
 if __name__ == "__main__":
-    """ This is executed when run from the command line """
+    ''' This is executed when run from the command line '''
     main()
