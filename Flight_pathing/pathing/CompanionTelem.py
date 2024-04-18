@@ -101,13 +101,9 @@ def check_AUTO():
     '''
     Checks if the mode is in autopilot
     '''
-    # Wait for response
-    while True:
-        msg = master.recv_match(type='HEARTBEAT', blocking=True)
-        if msg:
-            current_mode = mavutil.mode_string_v10(msg)
-            break
-    
+    msg = master.recv_match(type='HEARTBEAT', blocking=True)
+    current_mode = mavutil.mode_string_v10(msg)
+            
     # Check if current mode is "AUTO"
     if current_mode == "AUTO":
         print("Mode is autopilot (AUTO)")

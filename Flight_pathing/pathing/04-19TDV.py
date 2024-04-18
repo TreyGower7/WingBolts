@@ -1,5 +1,6 @@
 from pymavlink import mavutil, mavwp
 import time
+import csv
 
 master = mavutil.mavlink_connection('udp:localhost:14551')  
 master.wait_heartbeat(blocking=True)                                       
@@ -40,7 +41,7 @@ def send_telem(waypoints,phase):
         master.mav.send(wp.wp(msg.seq))                                                                      
         print(f'Sending waypoint {msg.seq}')         
 
-def recieve_telem():
+def receive_telem():
     '''
     receives telemetry data from pixhawk to pi
     '''
@@ -53,6 +54,7 @@ def recieve_telem():
         time.sleep(0.1)
         
         return msg
+    
 def main():
     waypoints = [
         {"lat": 30.323221, "lon":  -97.602798},
@@ -63,6 +65,18 @@ def main():
     ]   
 
     send_telem(waypoints,'search')
+
+    # Define the filename
+    filename = 'Telem_Test.csv'
+
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
+        for i in range(20):
+            msg = receive_telem()  # Assuming receive_telem() returns telemetry data
+            row = [msg.lat, msg.lon, msg.alt, msg.Vx, msg.Vy, msg.Vz]  # Create row of data
+            writer.writerow(row)  # Write row to CSV file
+
 
 if __name__ == "__main__":
         main()
