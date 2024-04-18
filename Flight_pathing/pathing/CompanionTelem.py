@@ -72,14 +72,14 @@ def send_telem(coords, phase):
     sends telemetry data to pixhawk from pi
     '''
 
-    MAX_BANK_ANGLE = 30  #Maximum allowable bank angle in degrees
+    MAX_BANK_ANGLE = 45  #Maximum allowable bank angle in degrees
     #Convert maximum bank angle to radians for MAVLink parameter
     max_bank_angle_rad = MAX_BANK_ANGLE * (math.pi / 180) #Maximum allowable bank angle in radians
 
     altitude = altitude_handle(phase)
     # Send telemetry data to Pixhawk
     master.mav.mission_item_send(
-        0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+        master.target_system, master.target_component, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
         mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
         coords['latitude'], coords['longitude'], altitude)
     print(f"Sending waypoint: ({ coords['latitude']}, {coords['longitude']}, {altitude})")

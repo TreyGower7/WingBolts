@@ -1,7 +1,8 @@
 #import Listen
-from Flight_pathing.pathing.Telempy import get_telem, send_telem
+from Flight_pathing.pathing.Search import Search_zigzag
+from Flight_pathing.pathing.Telempy import send_telem, receive_telem, haversine_check
+import math
 import time
-from Search import Search_zigzag, check_waypoint
 
 """
 Main script for connecting to pixhawk,
@@ -35,7 +36,7 @@ def main():
             break
         
     while phase_surveillance == True:
-        check_waypoint(waypoints)
+        check_w(waypoints)
         coords = get_telem()
         send_telem(coords)
 
