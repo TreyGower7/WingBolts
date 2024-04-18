@@ -3,6 +3,7 @@ from Flight_pathing.pathing.Sorting_Distance import haversine_check, sort_obj_wa
 from Flight_pathing.pathing.Telempy import send_telem, receive_telem, haversine_check, get_telem, check_AUTO
 import math
 import time
+from pymavlink import mavutil, mavwp
 
 """
 Main script for connecting to pixhawk,

@@ -1,4 +1,4 @@
-from pymavlink import mavutil
+from pymavlink import mavutil, mavwp
 import random
 import time
 import math
@@ -87,24 +87,11 @@ def receive_telem():
     '''
     receives telemetry data from pixhawk to pi
     '''
-    # Receive messages in a loop
-    while True:
-        # Wait for a message
-        msg = master.recv_match()
-        
-        # Check if message is not None
-        if msg:
-            # Process messages of interest
-            if msg.get_type() == 'GLOBAL_POSITION_INT':
-                # Example: Print latitude, longitude, and altitude
-                print("Global Position: Lat={}, Lon={}, Alt={}".format(msg.lat, msg.lon, msg.alt))
-                break
-            elif msg.get_type() == 'STATUSTEXT':
-                # Example: Print status text messages
-                print("Status Text: {}".format(msg.text))
-            
-        
-                        
+    #message
+    msg = master.recv_match(type=['GLOBAL_POSITION_INT'],blocking=True)             
+    # Check if message is not None
+    if msg:
+        print("Global Position: Lat={}, Lon={}, Alt={}".format(msg.lat, msg.lon, msg.alt))        
         # Sleep for a short duration to avoid busy-waiting
         time.sleep(0.1)
         
@@ -183,7 +170,6 @@ def haversine_check(waypoints, use, ref_waypoint):
         else:
             print(f'Distance from waypoint: {distance}')
         return waypoints
-    
     if use == 'Distance':
         return distance
 
@@ -285,7 +271,17 @@ def main():
             break
         
     while phase == 'drop':
-
+         #Auto Pilot Check
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO()
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
+        
 
         time.sleep(.2)  #Adjust as needed for the update frequency
 
