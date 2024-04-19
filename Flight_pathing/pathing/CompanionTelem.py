@@ -187,7 +187,35 @@ def drop_line():
     '''
     calculates optimal drop line for targets
     '''
+    
+def receive_speed():
+    msg = master.recv_match(type=['GLOBAL_POSITION_INT'],blocking=True)             
+    # Check if message is not None
+    if msg:
+        print("Global Position: X_velocity={}, Y_velocity={}, Z_velocity={}".format(msg.vx, msg.vy, msg.vz))
+        # Sleep for a short duration to avoid busy-waiting
+        time.sleep(0.1)            
+        
+                        
+        # Sleep for a short duration to avoid busy-waiting
+        time.sleep(0.1)
+        
+        return msg   
 
+# tlog files didn't have speed, but pixhawk does?
+def receive_accel():
+    msg = master.recv_match(type=['SCALED_IMU'],blocking=True)             
+    # Check if message is not None
+    if msg:
+        print("Global Position: X_acc={}, Y_acc={}, Z_acc={}, Time={}".format(msg.xacc, msg.yacc, msg.zacc, msg.time_boot_ms))
+        # Sleep for a short duration to avoid busy-waiting
+        time.sleep(0.1)            
+        
+                        
+        # Sleep for a short duration to avoid busy-waiting
+        time.sleep(0.1)
+        
+        return msg   
 
 def main():
     ''' Main Func '''
