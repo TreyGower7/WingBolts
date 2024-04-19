@@ -3,33 +3,7 @@ from pymavlink import mavutil
 import numpy as np
 import math
 import random
-
-def random_coords(domain):
-    """
-    *********************
-    ** Only Using For Sims **
-    *********************
-    Generate random latitude and longitude within a specified domain.
-
-    Args:
-    Tuple (min_lat, max_lat, min_lon, max_lon)
-
-    Returns:
-    Tuple (latitude, longitude)
-    """
-    min_lat, max_lat, min_lon, max_lon = domain
-    lat = random.uniform(min_lat, max_lat)
-    lon = random.uniform(min_lon, max_lon)
-    coords = {'latitude': lat, 'longitude': lon}
-    return coords
-
-def get_telem():
-    '''
-    Gets Telemetry data from Pixhawk
-    '''
-    domain = (30.320122, 30.324865, -97.603076, -97.598687)  # Boundaries for Arca
-    coords = random_coords(domain)
-    return coords
+from Flight_pathing.pathing.CompanionTelem import receive_telem
 
 def projectile_range(v_x, v_y, H):
     """
@@ -82,7 +56,7 @@ def release_point(target_long, target_lat, R, current_long, current_lat):
     theta = math.atan(z)
     RP_lat = target_lat - R*math.sin(theta)
     RP_long = target_long - R*math.cos(theta)
-    return(RP_lat, RP_long)
+    return({'lat': RP_lat, 'lon': RP_long})
 
 
 def geo_to_cartesian(latitude, longitude):
@@ -94,10 +68,28 @@ def geo_to_cartesian(latitude, longitude):
     y = r*math.cos(lat)*math.sin(lon)
     return(x,y)
 
+def traj_main():
+    # what do I loop it over?
+
+    pix = receive_telem()
+    current_lat = pix.lat
+    current_lon = pix.lon
+    vx = pix.vx * 10^-2
+    vz = pix.vz * 10^-2 # it says vz, is the speed positive down?
+    H = 45.72
+    [range, y, x] = projectile_range(vx, vz, H)
+   # object_coords = object_coords() 
+   # target_long = object_coords['lon']
+   # target_lat = object_coords['lat]
+
+   # this is fed to the servo and when our current location matches this, 
+   # drop the payload
+   # RP = release_point(target_long, target_lat, range, current_long, current_lat)
+   
+
 
 if __name__ == "__main__":
-    altitude = 45.72 # surveillance phase
-    print(projectile_range())
+    traj_main()
 
 
 
