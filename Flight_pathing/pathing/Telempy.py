@@ -1,6 +1,7 @@
 from pymavlink import mavutil
 import random
 import time
+import math
 
 # Set the connection parameters (change accordingly)
 connection_string = '/dev/ttyAMA0' # UART connection
@@ -85,4 +86,3 @@ def altitude_handle(phase):
         return 91.44
     if phase == 'surveillance':
         return 45.72  
-    
