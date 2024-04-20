@@ -350,7 +350,7 @@ def main():
         print("Checking For Payload Drop")
         drop_points = haversine_high_frequency(drop_points)
 
-        #once zig zag is complete we go to next phase
+        #once payload are dropped we go to mission end
         if len(drop_points) == 0:
             print("All Payloads Dropped To Targets")
             phase = 'END_MISSION'
