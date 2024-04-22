@@ -61,8 +61,3 @@ def sort_obj_waypoints(reference_waypoint, Obj_waypoints):
     sorted_obj = [waypoint for waypoint, _ in sorted(obj_distances, key=lambda x: x[1])]
     
     return sorted_obj
-
-def drop_line():
-    '''
-    calculates optimal drop line for targets
-    '''
