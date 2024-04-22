@@ -1,7 +1,7 @@
 from pymavlink import mavutil
 import math
 from pyproj import Proj, transform
-#from Flight_pathing.pathing.CompanionTelem import receive_telem
+from Flight_pathing.pathing.Telempy import receive_telem
 
 def projectile_range(v_x, v_y, H):
     """
@@ -24,7 +24,6 @@ def projectile_range(v_x, v_y, H):
     iters = 0
     x = 0
     y = 0
-    t = 0
     if (v_x < -7) :
         v_x = abs(v_x)
     
@@ -63,7 +62,6 @@ def cart_2_geo(x, y):
 
     return lon, lat
 
-
 def release_point(target_long, target_lat, R, current_long, current_lat):
     c_x, c_y = geo_2_cart(current_lat, current_long)
     t_x, t_y = geo_2_cart(target_lat, target_long)
@@ -72,25 +70,20 @@ def release_point(target_long, target_lat, R, current_long, current_lat):
     RP_x = t_x + R*math.cos(theta)
     RP_y = t_y + R*math.sin(theta)
     RP_long, RP_lat = cart_2_geo(RP_x, RP_y)
-    print(RP_lat, RP_long)
     return {'lat': RP_lat, 'lon': RP_long}
 
-#def traj_main():
+def traj_main(current_lon, current_lat, target_long, target_lat):
 
-   # pix = receive_telem()
-   # H = pix.relative_alt
-  #  current_lat = pix.lat
-  #  current_lon = pix.lon
-   # vx = pix.vx * 10^-2
- #   vy = pix.vy * 10^-2 # it says vz, is the speed positive down?
-  #  range = projectile_range(vx, vy, H)
-   # object_coords = object_coords()
-   # target_long = object_coords['lon']
-   # target_lat = object_coords['lat]
+    pix = receive_telem()
+    H = pix.relative_alt
+    vx = pix.vx * 10^-2
+    vy = pix.vy * 10^-2 # it says vz, is the speed positive down?
+    range = projectile_range(vx, vy, H)
 
-   # this is fed to the servo and when our current location matches this, 
+    # this is fed to the servo and when our current location matches this, 
    # drop the payload
-   # RP = release_point(target_long, target_lat, range, current_long, current_lat)
+    RP = release_point(target_long, target_lat, range, current_lon, current_lat)
+    return RP
    
 
 
