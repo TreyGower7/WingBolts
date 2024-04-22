@@ -3,6 +3,7 @@ import random
 import time
 from Flight_pathing.pathing.Telempy import send_telem
 from Flight_pathing.pathing.Sorting_Distance import sort_obj_waypoints
+from Trajectory.trajectory import traj_main
 
 
 
@@ -48,6 +49,14 @@ def predrop_phase(refinedobj_waypoints, phase):
     #first drop point based on reset point, second drop point based on first object waypoint...
     #List of dictionaries format
     drop_points = []
+    current_lon = reset_waypoint['lon']
+    current_lat = reset_waypoint['lat']
+    for i in range(len(distressed_waypoints)):
+        RP = traj_main(current_lon, current_lat, distressed_waypoints[i]['lon'], distressed_waypoints[i]['lat'])
+        drop_points.append(RP)
+        current_lon = RP['lon']
+        current_lat = RP['lat'] 
+
 
     #Sort by distance
     drop_points = sort_obj_waypoints(reset_waypoint, drop_points)
