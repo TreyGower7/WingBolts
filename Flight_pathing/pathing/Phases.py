@@ -46,7 +46,8 @@ def predrop_phase(refinedobj_waypoints, phase):
 
      #***Calculate drop points here in a loop and store them based on distressed_waypoints***
     #first drop point based on reset point, second drop point based on first object waypoint...
-    drop_points = {'lat': 0, 'lon': 0}
+    #List of dictionaries format
+    drop_points = []
 
     #Sort by distance
     drop_points = sort_obj_waypoints(reset_waypoint, drop_points)
