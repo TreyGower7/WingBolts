@@ -8,7 +8,7 @@ def haversine_check(waypoints, use, ref_waypoint):
     '''
     R = 6371.0  # Radius of the Earth in kilometers
 
-    if use == 'Update_waypoints':
+    if use == 'Update_waypoints' or use == 'Drop':
         #get current position
         msg = receive_telem()
         current_lat = msg.lat
@@ -36,7 +36,7 @@ def haversine_check(waypoints, use, ref_waypoint):
     a = math.sin(dlat / 2)**2 + math.cos(current_lat) * math.cos(waypoint_lat) * math.sin(dlon / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
     distance = R * c
-
+        
     if use == 'Update_waypoints':
         if distance < 0.003048: #10 feet
             print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
@@ -44,9 +44,26 @@ def haversine_check(waypoints, use, ref_waypoint):
         else:
             print(f'Distance from waypoint: {distance}')
         return waypoints
-    
     if use == 'Distance':
         return distance
+    
+    if use == 'DROP':
+        if distance <= 0.0009144: #3 feet
+            waypoints.pop(0)  # Remove the reached waypoint
+            return 'DROP_SIGNAL', waypoints
+        else:
+            return 'WAIT', None
+
+def haversine_high_frequency(drop_points):
+    '''
+    High frequency update of plane location for the most accurate dropping position
+    '''
+    while True:
+        Signal, drop_points = haversine_check(drop_points, 'DROP', None)
+        if Signal == 'DROP_SIGNAL':
+            #***Drop Payload by calling servo actuating function here***
+            break
+    return drop_points
 
 #*******Tested and Working*******
 def sort_obj_waypoints(reference_waypoint, Obj_waypoints): 
