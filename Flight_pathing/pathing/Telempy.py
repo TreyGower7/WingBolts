@@ -31,7 +31,7 @@ def random_coords(domain):
     return coords
 
 
-def get_telem():
+def get_obj_coords():
     '''
     Gets Telemetry data from Pixhawk
     '''
@@ -43,46 +43,43 @@ def send_telem(coords, phase):
     '''
     sends telemetry data to pixhawk from pi
     '''
+
+    MAX_BANK_ANGLE = 45  #Maximum allowable bank angle in degrees
+    #Convert maximum bank angle to radians for MAVLink parameter
+    max_bank_angle_rad = MAX_BANK_ANGLE * (math.pi / 180) #Maximum allowable bank angle in radians
+
     altitude = altitude_handle(phase)
     # Send telemetry data to Pixhawk
-    msg = master.mav.mission_item_send(
-        0, 0, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, 0, 0, 0,
+    master.mav.mission_item_send(
+        master.target_system, master.target_component, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
         coords['latitude'], coords['longitude'], altitude)
-    master.mav.send(msg)
 
 def receive_telem():
     '''
     receives telemetry data from pixhawk to pi
     '''
-    # Receive messages in a loop
-    while True:
-        # Wait for a message
-        msg = master.recv_match()
-        
-        # Check if message is not None
-        if msg:
-            # Process messages of interest
-            if msg.get_type() == 'GLOBAL_POSITION_INT':
-                # Example: Print latitude, longitude, and altitude
-                print("Global Position: Lat={}, Lon={}, Alt={}".format(msg.lat, msg.lon, msg.alt))
-            elif msg.get_type() == 'STATUSTEXT':
-                # Example: Print status text messages
-                print("Status Text: {}".format(msg.text))
-            
-        
-                        
+    #message
+    msg = master.recv_match(type=['GLOBAL_POSITION_INT'],blocking=True)             
+    # Check if message is not None
+    if msg:
+        print("Global Position: Lat={}, Lon={}, Alt={}".format(msg.lat, msg.lon, msg.alt))        
         # Sleep for a short duration to avoid busy-waiting
         time.sleep(0.1)
         
         return msg
+            
     
+#*******Tested and Working*******  
 def altitude_handle(phase):
     '''
     handles the altitude inputs to the plane
     '''
     #Altitudes are in meters
-    if phase == 'search':
+    if phase == 'SEARCH':
         return 91.44
-    if phase == 'surveillance':
+    if phase == 'SURVEILLANCE' or phase == 'END_MISSION': 
         return 45.72  
+    if phase == 'DROP':
+        #dunno what we want here
+        return 25.908
