@@ -3,22 +3,22 @@ from trajectory import projectile_range, release_point
 import pytest
 import random
 
-H = 50
-v_x = -20
-v_y = 20
+H = 42.998
+v_x = -14.76
+v_y = -12.45
 
 target_lat = 30.324385
 target_long = -97.603339
 
-current_long = -97.6029108
-current_lat = 30.3249295
+current_long = -97.6016273
+current_lat = 30.3218065
 
 range = projectile_range(v_x, v_y, H)
 RP = release_point(target_long, target_lat, range, current_long, current_lat)
 
-print(RP)
-print(f'{current_lat}, {current_long}')
-print(f'{target_lat}, {target_long}')
+print(f'release point', RP['lat'] , RP['lon'] )
+print(f'current {current_lat}, {current_long}')
+print(f'target {target_lat}, {target_long}')
 
 def test_projectile_range():
     # examples
