@@ -2,8 +2,12 @@ from pymavlink import mavutil, mavwp
 import time
 import csv
 
-master = mavutil.mavlink_connection('udp:localhost:14551')  
-master.wait_heartbeat(blocking=True)                                       
+# Set the connection parameters (change accordingly)
+connection_string = '/dev/ttyACM0'
+baudrate = 115200
+
+# Connect to the Pixhawk
+master = mavutil.mavlink_connection(connection_string, baud=baudrate)                                       
 
 #*******Tested and Working*******  
 def altitude_handle(phase):
