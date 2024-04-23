@@ -3,8 +3,8 @@ import time
 import csv
 
 # Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyACM0'
-baudrate = 115200
+connection_string = '/dev/ttyAMA0'
+baudrate = 57600
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)                                       
@@ -78,7 +78,7 @@ def main():
         writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
         for i in range(20):
             msg = receive_telem()  # Assuming receive_telem() returns telemetry data
-            row = [msg.lat, msg.lon, msg.alt, msg.Vx, msg.Vy, msg.Vz]  # Create row of data
+            row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
             writer.writerow(row)  # Write row to CSV file
 
 

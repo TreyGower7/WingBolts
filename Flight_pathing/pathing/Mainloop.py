@@ -13,9 +13,8 @@ and updating waypoints based on ML
 
 __author__ = "Trey Gower"
 
-# Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyAMA0' # UART connection
-baudrate = 57600   
+connection_string = '/dev/ttyAMA0' #Pin connectors for Pi
+baudrate = 57600  
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
@@ -38,7 +37,7 @@ def main():
             break
 
     #saves last waypoint for sorting alg
-    last_waypoint= waypoints[-1]
+    last_waypoint = waypoints[-1]
 
     while phase == 'SEARCH':
         #Auto Pilot Check
@@ -108,6 +107,7 @@ def main():
     
     #Set the plane up for payload drop
     drop_points = predrop_phase(refinedobj_waypoints)
+
     #Send sorted drop_point for target coords
     send_telem(drop_points, phase)
 
