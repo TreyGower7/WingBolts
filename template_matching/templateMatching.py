@@ -16,7 +16,7 @@ templateShapes.append(templates[1].shape[:: -1])
 w = templateShapes[0][1]
 h = templateShapes[0][0]
 
-# method of computation: which one do i use ;-;
+# methods of computation: which one do i use ;-;
 # method = cv.TM_CCOEFF # bad for video, okay for image
 method = cv.TM_CCOEFF_NORMED # decent for video, bad for image
 # method = cv.TM_CCORR # doesnt always have box, but cant find target
@@ -48,6 +48,7 @@ def templateMatching(templates, img, w, h):
         min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
 
         # calculate coordinates
+        # top_left = min_loc # for SQDIFF methods
         top_left = max_loc
         bottom_right = (top_left[0] + w, top_left[1] + h)
 
@@ -78,18 +79,15 @@ def videoTemplateMatching(templates, vid, w, h):
         # do template matching
         res = cv.matchTemplate(gray, templates[0], method)
 
-        # store coordinates of matched area
-        min_val, max_val, min_loc, max_loc = cv.minMaxLoc(res)
-
-        # calculate coordinates
-        # top_left = min_loc # for SQDIFF methods
-        top_left = max_loc
-        bottom_right = (top_left[0] + w, top_left[1] + h)
-
-        if res is not None:
+        # treshold for 
+        threshold = 0.8
         
-            # add bounding box
-            cv.rectangle(gray, top_left, bottom_right, (255, 0, 0), 2)
+        # store coordinates of matched area
+        loc = np.where(res >= threshold) 
+
+        # add bounding box in matched area
+        for pt in zip(*loc[::-1]): 
+            cv.rectangle(gray, pt, (pt[0] + w, pt[1] + h), (255, 0, 0), 2) 
 
         # display frames
         cv.imshow('frame', gray)  
@@ -101,6 +99,6 @@ def videoTemplateMatching(templates, vid, w, h):
     cv.destroyAllWindows()  
 
 if __name__ == "__main__":
-    templateMatching(templates, img, w, h)
-    # videoTemplateMatching(templates, vid, w, h)
+    # templateMatching(templates, img, w, h)
+    videoTemplateMatching(templates, vid, w, h)
 
