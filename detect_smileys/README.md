@@ -1,7 +1,7 @@
 # object detection
 tflite model and scripts to run 
 
-need to pull: 
+need to pull:  
 `custom_model_lite`
 `tflite_webcam_bboxes.py`
 
