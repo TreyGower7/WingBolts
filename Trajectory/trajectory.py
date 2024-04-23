@@ -1,4 +1,3 @@
-from pymavlink import mavutil
 import math
 from pyproj import Proj, transform
 from Flight_pathing.pathing.Telempy import receive_telem
@@ -75,7 +74,7 @@ def release_point(target_long, target_lat, R, current_long, current_lat):
 def traj_main(current_lon, current_lat, target_long, target_lat):
 
     pix = receive_telem()
-    H = pix.relative_alt
+    H = pix.relative_alt * 10^-3
     vx = pix.vx * 10^-2
     vy = pix.vy * 10^-2 # it says vz, is the speed positive down?
     range = projectile_range(vx, vy, H)

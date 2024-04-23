@@ -2,8 +2,12 @@ from pymavlink import mavutil, mavwp
 import time
 import csv
 
-master = mavutil.mavlink_connection('udp:localhost:14551')  
-master.wait_heartbeat(blocking=True)                                       
+# Set the connection parameters (change accordingly)
+connection_string = '/dev/ttyAMA0'
+baudrate = 57600
+
+# Connect to the Pixhawk
+master = mavutil.mavlink_connection(connection_string, baud=baudrate)                                       
 
 #*******Tested and Working*******  
 def altitude_handle(phase):
@@ -74,7 +78,7 @@ def main():
         writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
         for i in range(20):
             msg = receive_telem()  # Assuming receive_telem() returns telemetry data
-            row = [msg.lat, msg.lon, msg.alt, msg.Vx, msg.Vy, msg.Vz]  # Create row of data
+            row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
             writer.writerow(row)  # Write row to CSV file
 
 

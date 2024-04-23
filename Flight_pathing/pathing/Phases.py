@@ -1,13 +1,8 @@
-from pymavlink import mavutil
-import random
-import time
-from Flight_pathing.pathing.Telempy import send_telem
-from Flight_pathing.pathing.Sorting_Distance import sort_obj_waypoints
 from Trajectory.trajectory import traj_main
 
 
 
-def Search_zigzag(master):
+def Search_zigzag():
     alt = 76.2 #meters
     phase = 'surveillance'
     waypoints = [
@@ -18,14 +13,10 @@ def Search_zigzag(master):
     {"lat": 30.324597, "lon": -97.602615},
     {"lat": 30.325245, "lon": -97.604256},
     ]   
-    #populate waypoints for initial search phase
-    for i in range(len(waypoints)):
-        coords = {'latitude': waypoints[i]['lat'], 'longitude': waypoints[i]['lon']}
-        send_telem(coords, phase)
 
     return waypoints
 
-def predrop_phase(refinedobj_waypoints, phase):
+def predrop_phase(refinedobj_waypoints):
     '''
     Sets the plane up for dropping the payload
     '''
@@ -34,8 +25,6 @@ def predrop_phase(refinedobj_waypoints, phase):
 
     #fly out to random point to prepare for payload drop
     reset_waypoint = {'lat': 30.323246847038178, 'lon': -97.60228430856947}
-    send_telem(reset_waypoint, phase)
-    print(f"Sending waypoint: ({reset_waypoint[i]['lat']}, {reset_waypoint[i]['lon']})")
 
     #Sort and send distressed targets
     #****Write these to a file to be saved***** 
@@ -48,7 +37,8 @@ def predrop_phase(refinedobj_waypoints, phase):
      #***Calculate drop points here in a loop and store them based on distressed_waypoints***
     #first drop point based on reset point, second drop point based on first object waypoint...
     #List of dictionaries format
-    drop_points = []
+    #Starting from the reset_waypoint
+    drop_points = [reset_waypoint]
     current_lon = reset_waypoint['lon']
     current_lat = reset_waypoint['lat']
     for i in range(len(distressed_waypoints)):
@@ -57,15 +47,6 @@ def predrop_phase(refinedobj_waypoints, phase):
         current_lon = RP['lon']
         current_lat = RP['lat'] 
 
-
-    #Sort by distance
-    drop_points = sort_obj_waypoints(reset_waypoint, drop_points)
-    #Send sorted drop_point for target coords
-    for i in range(len(drop_points)):
-        #****Need to Add Loitering****
-        coords = {'latitude': drop_points[i]['lat'], 'longitude': drop_points[i]['lon']}
-        send_telem(coords, phase)
-        print(f"Sending waypoint {i+1}: ({drop_points[i]['lat']}, {drop_points[i]['lon']})")
     
     return drop_points
 

@@ -13,9 +13,8 @@ and updating waypoints based on ML
 
 __author__ = "Trey Gower"
 
-# Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyAMA0' # UART connection
-baudrate = 57600   
+connection_string = '/dev/ttyAMA0' #Pin connectors for Pi
+baudrate = 57600  
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
@@ -32,11 +31,13 @@ def main():
         if mode == 'AUTO':
             #Populate Coordinates for Search phase
             waypoints = Search_zigzag()
+            #populate waypoints for initial search phase
             phase = 'SEARCH'
+            send_telem(waypoints, phase)
             break
 
     #saves last waypoint for sorting alg
-    last_waypoint= waypoints[-1]
+    last_waypoint = waypoints[-1]
 
     while phase == 'SEARCH':
         #Auto Pilot Check
@@ -71,11 +72,8 @@ def main():
             #Sorting Algorithmn
             Obj_waypoints = sort_obj_waypoints(last_waypoint, Obj_waypoints)
             #Send coordinates to pixhawk
-            for i in range(len(Obj_waypoints)):
-                #****Need to Add Loitering****
-                coords = {'latitude': Obj_waypoints[i]['lat'], 'longitude': Obj_waypoints[i]['lon']}
-                send_telem(coords, phase)
-                print(f"Sending waypoint {i+1}: ({Obj_waypoints[i]['lat']}, {Obj_waypoints[i]['lon']})")
+            #****Need to Add Loitering****
+            send_telem(Obj_waypoints, phase)
             break
     
     while phase == 'SURVEILLANCE':
@@ -108,7 +106,10 @@ def main():
             break
     
     #Set the plane up for payload drop
-    drop_points = predrop_phase(refinedobj_waypoints, phase)
+    drop_points = predrop_phase(refinedobj_waypoints)
+
+    #Send sorted drop_point for target coords
+    send_telem(drop_points, phase)
 
     while phase == 'DROP':
          #Auto Pilot Check
