@@ -1,4 +1,4 @@
-from pymavlink import mavutil
+from pymavlink import mavutil, mavwp
 import random
 import time
 import math
@@ -39,22 +39,33 @@ def get_obj_coords():
     coords = random_coords(domain)
     return coords
 
-def send_telem(coords, phase):
-    '''
-    sends telemetry data to pixhawk from pi
-    '''
+#****Tested and works*****
+def send_telem(waypoints,phase):
+    wp = mavwp.MAVWPLoader()   
+    altitude = altitude_handle(phase)                                                 
+    seq = 1
+    frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+    radius = 10
+    N = len(waypoints)
+    for i in range(N):                  
+        wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
+                    master.target_component,
+                    seq,
+                    frame,
+                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                    0, 0, 0, radius, 0, 0,
+                    waypoints[i]['lat'],waypoints[i]['lon'], altitude))
+        seq += 1                                                                       
 
-    MAX_BANK_ANGLE = 45  #Maximum allowable bank angle in degrees
-    #Convert maximum bank angle to radians for MAVLink parameter
-    max_bank_angle_rad = MAX_BANK_ANGLE * (math.pi / 180) #Maximum allowable bank angle in radians
+    master.waypoint_clear_all_send()                                     
+    master.waypoint_count_send(wp.count())                          
 
-    altitude = altitude_handle(phase)
-    # Send telemetry data to Pixhawk
-    master.mav.mission_item_send(
-        master.target_system, master.target_component, 0, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-        mavutil.mavlink.MAV_CMD_NAV_WAYPOINT, 0, 0, max_bank_angle_rad, 0, 0,
-        coords['latitude'], coords['longitude'], altitude)
+    for i in range(wp.count()):
+        msg = master.recv_match(type=['MISSION_REQUEST'],blocking=True)             
+        master.mav.send(wp.wp(msg.seq))                                                                      
+        print(f'Sending waypoint {msg.seq}')    
 
+#****Tested and works*****
 def receive_telem():
     '''
     receives telemetry data from pixhawk to pi
@@ -69,7 +80,6 @@ def receive_telem():
         
         return msg
             
-    
 #*******Tested and Working*******  
 def altitude_handle(phase):
     '''

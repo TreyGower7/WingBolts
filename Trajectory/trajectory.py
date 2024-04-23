@@ -1,4 +1,3 @@
-from pymavlink import mavutil
 import math
 from pyproj import Proj, transform
 from Flight_pathing.pathing.Telempy import receive_telem
