@@ -1,19 +1,22 @@
 import cv2
 import numpy as np
 import random as rd     # dont need for final code
+#from ..Flight_pathing.pathing import Telempy as tp
 
 sensor_width_mm = 4.712 # Camera sensor width in millimeters
 focal_length_mm = 16    # Focal length in millimeters
 
 # Camera resolution (assuming square pixels for simplicity)
-image_width = 2048
-image_height = 1520
+image_width = 1280
+image_height = 720
 
 # Example camera height from the ground
 camera_height = 300  # in units consistent with world coordinates
+# get from pixhawk ^^
 
 def get_random_bounding_box() -> np.array:
   '''
+  For testing purposed only.
   Get list of four points within image resolution values that
   simulate a bounding box.
 
@@ -53,9 +56,11 @@ def main():
 
   # Read in current gps point of aircraft
   curr_gps = np.array([[30.3240575,-97.6037814]], dtype=np.float32) # dummy gps value for now
+  #curr_gps = tp.receive_telem()
 
   # Read in bounding box value
   image_points = get_random_bounding_box() # dummy bounding box values
+  # get from object detection algorithm
 
   # Get center of bounding box
   object_center = get_object_center(image_points)
@@ -77,7 +82,6 @@ def main():
   world_points = cv2.perspectiveTransform(world_points, np.linalg.inv(camera_matrix) @ extrinsic_matrix)
   print("Aircraft GPS Coord.: ", curr_gps)
   print("Object GPS Estimation: ", curr_gps+world_points)
-
 
 if __name__ == '__main__':
   main()
