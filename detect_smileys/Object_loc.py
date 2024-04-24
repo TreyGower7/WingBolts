@@ -3,6 +3,7 @@ import numpy as np
 import random as rd     # dont need for final code
 import csv
 import json
+import math
 
 sensor_width_mm = 4.712 # Camera sensor width in millimeters
 focal_length_mm = 16    # Focal length in millimeters
@@ -43,11 +44,24 @@ def get_object_center(bounding_box: np.array) -> np.array:
 
   return np.array([[max(x_vals)+min(x_vals) / 2, max(y_vals)+min(y_vals) / 2]], dtype=np.float32) 
 
-def get_unique_target():
+def get_unique_target(target_info):
   """
   TODO: read in gps coords for detections and group near coords- 10^-5 tolerance
+  go through target_info, store 
   """
+  unique_target_info = []
+  for i, detection in enumerate(target_info):
+    lat1 = detection["lat"]
+    lon1 = detection['lon']
+    lat2 = target_info[i-1]['lat']
+    lon2 = target_info[i-1]['lon']
 
+    distance = math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
+    # threshold at 0.0001 lat/lon
+    if distance > 0.0001: 
+      unique_target_info.append(detection)
+
+  return unique_target_info
 
 def main():
   # Read JSON file
@@ -94,13 +108,14 @@ def main():
     gps_est = curr_gps + world_points
     target_info.append({"lat": gps_est.tolist()[0][0][0], "lon": gps_est.tolist()[0][0][1], "class": log["Class"], "time": log["Time"]})
 
+  unique_target_info = get_unique_target(target_info)
   # Extract field names from the first dictionary
-  field_names = list(target_info[0].keys())
+  field_names = list(unique_target_info[0].keys())
 
   with open('target_coords.csv', 'w', newline='') as f:
       writer = csv.DictWriter(f, fieldnames=field_names)
       writer.writeheader()
-      writer.writerows(target_info)
+      writer.writerows(unique_target_info)
   
   print("wrote coords to csv")
 
