@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import random as rd     # dont need for final code
 import csv
+from ..Flight_pathing.pathing import Telempy as tp
 import json
 
 sensor_width_mm = 4.712 # Camera sensor width in millimeters
@@ -10,9 +11,6 @@ focal_length_mm = 16    # Focal length in millimeters
 # Camera resolution (assuming square pixels for simplicity)
 image_width = 2048
 image_height = 1520
-
-# Example camera height from the ground
-camera_height = 300  # in units consistent with world coordinates
 
 
 def get_bounding_box(log) -> np.array:
@@ -48,7 +46,7 @@ def get_object_center(bounding_box: np.array) -> np.array:
 
 def main():
   # Read JSON file
-  with open('video_bbox_log.json', 'r') as json_file:
+  with open('webcam_bbox_log.json', 'r') as json_file:
     logs = json.load(json_file)
 
   # Calculate focal lengths in pixels
@@ -59,7 +57,10 @@ def main():
   principal_point = (image_width / 2, image_height / 2)
 
   # Read in current gps point of aircraft
-  curr_gps = np.array([[30.3240575,-97.6037814]], dtype=np.float32) # dummy gps value for now
+  plane = tp.receive_telem()
+  curr_gps = np.array([[plane.lat, plane.lon]], dtype=np.float32) # dummy gps value for now
+  # Read in camera height from the ground
+  camera_height = plane.alt # in units consistent with world coordinates
 
   target_info = []
 
