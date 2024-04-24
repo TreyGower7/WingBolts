@@ -1,4 +1,4 @@
-from trajectory import projectile_range, release_point
+from Trajectory.trajectory import projectile_range, release_point
 #from Flight_pathing.pathing.Telempy import get_telem
 import pytest
 import random
