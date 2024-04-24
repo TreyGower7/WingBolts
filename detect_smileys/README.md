@@ -7,7 +7,7 @@ need to pull:
 
 ```
 # webcam
-python tflite_webcam_bboxes.py --modeldir=custom_model_lite
+python3 tflite_webcam_bboxes.py --modeldir=custom_model_lite
 # input vid
 python3 tflite_video_bboxes.py --modeldir=custom_model_lite --video='flight_footage.mp4' 
 ```
