@@ -1,6 +1,6 @@
 from Flight_pathing.pathing.CompanionTelem import receive_telem
 import math
-
+from servo.servoscript import servo_activate
 #*******Tested and Working*******
 def haversine_check(waypoints, use, ref_waypoint):
     '''
@@ -61,7 +61,7 @@ def haversine_high_frequency(drop_points):
     while True:
         Signal, drop_points = haversine_check(drop_points, 'DROP', None)
         if Signal == 'DROP_SIGNAL':
-            #***Drop Payload by calling servo actuating function here***
+            servo_activate()
             break
     return drop_points
 

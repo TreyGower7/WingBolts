@@ -12,7 +12,7 @@ def correct_colors(frame):
     return bgr_frame
 
 # Open the camera
-cap = cv2.VideoCapture(0)  # Use 0 for the default camera
+cap = cv2.VideoCapture(1)  # Use 0 for the default camera
 
 if not cap.isOpened():
     print("Error: Couldn't open the camera.")
