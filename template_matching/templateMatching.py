@@ -1,8 +1,7 @@
 import numpy as np
 import cv2 as cv
 import json
-from ..Flight_pathing.pathing import Telempy as tp
-
+from WingBolts.Flight_pathing.pathing.Telempy import receive_telem
 
 # set happy and sad templates
 templates = []
@@ -53,7 +52,7 @@ def videoTemplateMatching(templates, vid, method):
         for pt in zip(*loc1[::-1]): 
 
             # plane coordinates
-            plane = tp.receive_telem()
+            plane = receive_telem()
             curr_lat = plane.lat
             curr_lon = plane.lon
             curr_alt = plane.alt
