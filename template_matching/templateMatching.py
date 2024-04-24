@@ -1,7 +1,9 @@
 import numpy as np
 import cv2 as cv
 import json
-from WingBolts.Flight_pathing.pathing.Telempy import receive_telem
+import sys
+sys.path.append('../Flight_pathing/pathing')
+from Telempy import receive_telem
 
 # set happy and sad templates
 templates = []
