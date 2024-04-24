@@ -21,6 +21,7 @@ import sys
 import importlib.util
 import time
 import datetime
+import json
 
 """
 NEW STUFF HERE:
@@ -33,43 +34,45 @@ all_detections = []
 def log_bboxes():
     logs = []
     found = []
+    counter = 0
     for detection in bbox_data:
         print(detection)
         all_detections.append(detection)
 
     for i, detection in enumerate(all_detections):
         # start at 3 detections
-        if i > 1:
+        if i > 2:
             class_label = detection['class']
-            if class_label not in found: # if 'happy' or 'sad' not logged
-                # find x coords of 3 boxes
-                x_0 = all_detections[i-2]['bbox'][0]
-                x_1 = all_detections[i-1]['bbox'][0]
-                x_2 = detection['bbox'][0]
-                # if not much distance between bounding box x_coord, log bbox
-                if abs(x_2 - x_1) < 30 and abs(x_1 - x_0) < 30:
-                    # bottom left: xmin ymin
-                    x1 = detection['bbox'][0]
-                    y1 = detection['bbox'][1]
-                    # top left: xmin ymax
-                    x2 = detection['bbox'][0]
-                    y2 = detection['bbox'][3]
-                    # top right: xmax ymax
-                    x3 = detection['bbox'][2]
-                    y3 = detection['bbox'][3]
-                    # bottom right: xmax ymin
-                    x4 = detection['bbox'][2]
-                    y4 = detection['bbox'][1]
+            # find x coords of 3 boxes
+            x_0 = all_detections[i-2]['bbox'][0]
+            x_1 = all_detections[i-1]['bbox'][0]
+            x_2 = detection['bbox'][0]
+            x_checkclose = all_detections[i-3]['bbox'][0]
+            # if not much distance between bounding box x_coord, log bbox
+            if abs(x_2 - x_1) < 30 and abs(x_1 - x_0) < 30:
+                # bottom left: xmin ymin
+                x1 = detection['bbox'][0]
+                y1 = detection['bbox'][1]
+                # top left: xmin ymax
+                x2 = detection['bbox'][0]
+                y2 = detection['bbox'][3]
+                # top right: xmax ymax
+                x3 = detection['bbox'][2]
+                y3 = detection['bbox'][3]
+                # bottom right: xmax ymin
+                x4 = detection['bbox'][2]
+                y4 = detection['bbox'][1]
 
-                    bbox = [x1, y1, x2, y2, x3, y3, x4, y4]
+                bbox = [x1, x2, x3, x4, y1, y2, y3, y4]
 
-                    found.append(class_label)
-                    time_string = datetime.datetime.fromtimestamp(detection['time']).strftime('%H:%M:%S.%f')
+                time_string = datetime.datetime.fromtimestamp(detection['time']).strftime('%H:%M:%S.%f')
 
+                if abs(x_0-x_checkclose) > 30:
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string})
+ 
                
-    with open('video_bbox_log.txt', 'w') as file:
-        file.writelines([str(log) + '\n' for log in logs])
+    with open('video_bbox_log.json', 'w') as file:
+        json.dump(logs, file, indent=4)
 
 # Define and parse input arguments
 parser = argparse.ArgumentParser()

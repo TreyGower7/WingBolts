@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 import random as rd     # dont need for final code
 import csv
-from ..Flight_pathing.pathing import Telempy as tp
 import json
 
 sensor_width_mm = 4.712 # Camera sensor width in millimeters
@@ -44,6 +43,7 @@ def get_object_center(bounding_box: np.array) -> np.array:
 
   return np.array([[max(x_vals)+min(x_vals) / 2, max(y_vals)+min(y_vals) / 2]], dtype=np.float32) 
 
+
 def main():
   # Read JSON file
   with open('webcam_bbox_log.json', 'r') as json_file:
@@ -56,16 +56,16 @@ def main():
   # Principal point (assuming the image center)
   principal_point = (image_width / 2, image_height / 2)
 
-  # Read in current gps point of aircraft
-  plane = tp.receive_telem()
-  curr_gps = np.array([[plane.lat, plane.lon]], dtype=np.float32) # dummy gps value for now
-  # Read in camera height from the ground
-  camera_height = plane.alt # in units consistent with world coordinates
-
   target_info = []
 
   # Read in bounding box value
   for log in logs:
+    # Read in current gps point of aircraft
+    plane = tp.receive_telem()
+    curr_gps = np.array([log['Location'][0], log['Location'][1]], dtype=np.float32) # dummy gps value for now
+    # Read in camera height from the ground
+    camera_height = log['Location'][2] # in units consistent with world coordinates
+
     image_points = get_bounding_box(log) 
 
     # Get center of bounding box
