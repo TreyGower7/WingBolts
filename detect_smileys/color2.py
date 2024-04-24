@@ -21,7 +21,7 @@ time.sleep(2)
 video_capture = cv2.VideoCapture()
 
 # Open the video stream
-video_capture.open(camera.capture_continuous(rawCapture, format="bgr", use_video_port=True))
+video_capture.open(camera.capture_continuous(rawCapture, format="rgb", use_video_port=True))
 
 # Main loop to capture and process frames
 for frame in video_capture:
