@@ -72,6 +72,7 @@ def log_bboxes():
 
                 if abs(x_0-x_checkclose) > 30:
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string, "Location": tuple(location)})
+                    ###
                
     with open('webcam_bbox_log.txt', 'w') as file:
         file.writelines([str(log) + '\n' for log in logs])

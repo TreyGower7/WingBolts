@@ -43,6 +43,11 @@ def get_object_center(bounding_box: np.array) -> np.array:
 
   return np.array([[max(x_vals)+min(x_vals) / 2, max(y_vals)+min(y_vals) / 2]], dtype=np.float32) 
 
+def get_unique_target():
+  """
+  TODO: read in gps coords for detections and group near coords- 10^-5 tolerance
+  """
+
 
 def main():
   # Read JSON file
@@ -61,7 +66,6 @@ def main():
   # Read in bounding box value
   for log in logs:
     # Read in current gps point of aircraft
-    plane = tp.receive_telem()
     curr_gps = np.array([log['Location'][0], log['Location'][1]], dtype=np.float32) # dummy gps value for now
     # Read in camera height from the ground
     camera_height = log['Location'][2] # in units consistent with world coordinates
