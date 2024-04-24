@@ -1,9 +1,6 @@
 import numpy as np
 import cv2 as cv
 import json
-import sys
-sys.path.append('../Flight_pathing/pathing')
-from Telempy import receive_telem
 
 # set happy and sad templates
 templates = []
@@ -19,8 +16,8 @@ templateShapes.append(templates[1].shape[:: -1])
 method = cv.TM_CCOEFF_NORMED # decent for video, meh for image
 
 # testing video
-# vid = cv.VideoCapture("testclip.mp4")  
-vid = cv.VideoCapture(0) # camera as input
+# vid = cv.VideoCapture("testclip.mp4") 
+vid = cv.VideoCapture(0)
 
 """
 this function ...
@@ -54,12 +51,6 @@ def videoTemplateMatching(templates, vid, method):
         # only when a happy target is detected
         for pt in zip(*loc1[::-1]): 
 
-            # plane coordinates
-            plane = receive_telem()
-            curr_lat = plane.lat
-            curr_lon = plane.lon
-            curr_alt = plane.alt
-
             # dimensions for bounding box calculations
             w = templateShapes[0][1]
             h = templateShapes[0][0]
@@ -75,9 +66,6 @@ def videoTemplateMatching(templates, vid, method):
 
             # data for json file
             dictionary = {
-                "curr_lat": curr_lat,
-                "curr_lon": curr_lon,
-                "curr_alt": curr_alt,
                 "top_left": top_left,
                 "top_right": (bottom_right[0], top_left[1]),
                 "bottom_left": (top_left[0], bottom_right[1]),

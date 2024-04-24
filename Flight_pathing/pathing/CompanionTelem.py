@@ -5,7 +5,8 @@ import math
 
 
 # Set the connection parameters (change accordingly)
-connection_string = 'udp:127.0.0.1:14550' # sim connection
+connection_string = '/dev/ttyAMA0'
+baudrate = 57600
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string)
