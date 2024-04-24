@@ -19,7 +19,8 @@ templateShapes.append(templates[1].shape[:: -1])
 method = cv.TM_CCOEFF_NORMED # decent for video, meh for image
 
 # testing video
-vid = cv.VideoCapture("testclip.mp4")  
+# vid = cv.VideoCapture("testclip.mp4")  
+vid = cv.VideoCapture(0) # camera as input
 
 """
 this function ...
