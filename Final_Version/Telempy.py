@@ -3,21 +3,22 @@ import random
 import time
 import math
 
-def check_GUIDED(master):
+
+def check_AUTO():
     '''
-    Checks if the mode is in Guided mode
+    Checks if the mode is in autopilot
     '''
-   # Request current flight mode
-    master.mav.command_long_send(
-        master.target_system, master.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE, 0, 0, 0, 0, 0, 0, 0, 0)
-    # Wait for response
-    msg = master.recv_match(type='COMMAND_ACK', blocking=True)
-    if msg and msg.command == mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE:
-        print("Current flight mode:", mavutil.mavlink.enums['MAV_MODE_FLAG'][msg.param1].name)
+    msg = master.recv_match(type='HEARTBEAT', blocking=True)
+    current_mode = mavutil.mode_string_v10(msg)
+            
+    # Check if current mode is "AUTO"
+    if current_mode == "AUTO":
+        print("Mode is autopilot (AUTO)")
+        return 'AUTO'
     else:
-        print("Failed to retrieve flight mode")
-        
+        print("Mode is not autopilot")
+        return None
+    
 #****Tested and works*****
 def send_telem(master, waypoints,phase):
     altitude = altitude_handle(phase)                                                 

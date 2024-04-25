@@ -1,6 +1,6 @@
 from Phases import Search_zigzag, predrop_phase
 from Sorting_Distance import haversine_check, haversine_high_frequency
-from Telempy import send_telem, haversine_check, check_GUIDED, get_obj_coords
+from Telempy import send_telem, haversine_check, check_AUTO, get_obj_coords
 import time
 from pymavlink import mavutil
 
@@ -29,9 +29,9 @@ def main():
     Obj_waypoints = []
     #Ensures we manually set the mode to AUTO
     while mode is None:
-        mode = check_GUIDED()
+        mode = check_AUTO()
         print('Waiting on Autopilot Mode')
-        if mode == 'GUIDED':
+        if mode == 'AUTO':
             #Populate Coordinates for Search phase
             waypoints = Search_zigzag()
             #populate waypoints for initial search phase
@@ -41,12 +41,12 @@ def main():
 
     while phase == 'SEARCH':
         #Auto Pilot Check
-        mode = check_GUIDED()
+        mode = check_AUTO()
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
                 time.sleep(.5)
-                mode = check_GUIDED()
+                mode = check_AUTO()
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
                     break
@@ -74,12 +74,12 @@ def main():
 
     while phase == 'DROP':
          #Auto Pilot Check
-        mode = check_GUIDED()
+        mode = check_AUTO()
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
                 time.sleep(.5)
-                mode = check_GUIDED()
+                mode = check_AUTO()
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
                     break
