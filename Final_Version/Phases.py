@@ -1,4 +1,4 @@
-from Trajectory.trajectory import traj_main
+from trajectory import traj_main
 
 
 

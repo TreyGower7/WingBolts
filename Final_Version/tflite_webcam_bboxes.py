@@ -23,7 +23,7 @@ from threading import Thread
 import importlib.util
 import time # new import
 import datetime # new import
-from ..Flight_pathing.pathing import Telempy as tp
+import Telempy as tp
 
 """
 NEW STUFF HERE:

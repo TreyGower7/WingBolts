@@ -1,6 +1,6 @@
-from CompanionTelem import receive_telem
+from Telempy import receive_telem
 import math
-from servo.servoscript import servo_activate
+from servoscript import servo_activate
 #*******Tested and Working*******
 def haversine_check(waypoints, use, ref_waypoint):
     '''

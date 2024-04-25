@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-import random as rd     # dont need for final code
 import csv
 import json
 import math
+from Sorting_Distance import haversine_check
 
 sensor_width_mm = 4.712 # Camera sensor width in millimeters
 focal_length_mm = 16    # Focal length in millimeters
@@ -51,14 +51,18 @@ def get_unique_target(target_info):
   """
   unique_target_info = []
   for i, detection in enumerate(target_info):
-    lat1 = detection["lat"]
+    lat1 = detection['lat']
     lon1 = detection['lon']
+    waypoint1 = {'lat': lat1, 'lon': lon1}
     lat2 = target_info[i-1]['lat']
     lon2 = target_info[i-1]['lon']
+    target_wp = {'lat': lat2, 'lon': lon2}
 
-    distance = math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
-    # threshold at 0.0001 lat/lon
-    if distance > 0.0001: 
+
+    #distance = math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
+    distance = haversine_check(waypoint1, 'Distance', target_wp)
+    # threshold at 0.01 km
+    if distance > 0.01: # roughly 32 feet
       unique_target_info.append(detection)
 
   return unique_target_info

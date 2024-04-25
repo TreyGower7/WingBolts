@@ -1,6 +1,6 @@
 from Phases import Search_zigzag, predrop_phase
 from Sorting_Distance import haversine_check, sort_obj_waypoints, haversine_high_frequency
-from Telempy import send_telem, receive_telem, haversine_check, check_AUTO, get_obj_coords
+from Telempy import send_telem, haversine_check, check_AUTO, get_obj_coords
 import math
 import time
 from pymavlink import mavutil, mavwp
@@ -14,6 +14,8 @@ and updating waypoints based on ML
 __author__ = "Trey Gower"
 
 connection_string = '/dev/ttyAMA0' #Pin connectors for Pi
+#connection_string = '/dev/ttys039' #virtual connection for testing
+
 baudrate = 57600  
 
 # Connect to the Pixhawk
