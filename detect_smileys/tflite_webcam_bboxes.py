@@ -23,7 +23,10 @@ from threading import Thread
 import importlib.util
 import time # new import
 import datetime # new import
-from ..Flight_pathing.pathing import Telempy as tp
+## from ..Flight_pathing.pathing import Telempy as tp
+
+from picamera2 import Picamera2
+
 
 """
 NEW STUFF HERE:
@@ -69,11 +72,11 @@ def log_bboxes():
 
                 time_string = datetime.datetime.fromtimestamp(detection['time']).strftime('%H:%M:%S.%f')
 
-                plane = tp.receive_telem()
-                location = [plane.lat, plane.lon, plane.alt]
+                # plane = tp.receive_telem()
+                # location = [plane.lat, plane.lon, plane.alt]
 
                 ### UNCOMMENT FOR JUST TESTING
-                # location = [34.23483, 92.32423, 312.432]
+                location = [34.23483, 92.32423, 312.432]
 
                 if abs(x_0-x_checkclose) > 30:
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string, "Location": tuple(location)})
@@ -224,7 +227,12 @@ frame_rate_calc = 1
 freq = cv2.getTickFrequency()
 
 # Initialize video stream
-videostream = VideoStream(resolution=(imW,imH),framerate=30).start()
+camera = Picamera2()
+camera.preview_configuration.main.size=(1280,720)
+camera.preview_configuration.main.format='BGR888'
+camera.preview_configuration.align()
+camera.configure('preview')
+camera.start()
 time.sleep(1)
 
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
@@ -234,7 +242,7 @@ while True:
     t1 = cv2.getTickCount()
 
     # Grab frame from video stream
-    frame1 = videostream.read()
+    frame1 = camera.capture_array()
 
     # Acquire frame and resize to expected shape [1xHxWx3]
     frame = frame1.copy()
@@ -306,4 +314,3 @@ while True:
 
 # Clean up
 cv2.destroyAllWindows()
-videostream.stop()
