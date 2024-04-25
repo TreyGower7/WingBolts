@@ -232,7 +232,7 @@ freq = cv2.getTickFrequency()
 # Initialize video stream
 camera = Picamera2()
 camera.preview_configuration.main.size=(1280,720)
-camera.preview_configuration.main.format='BGR888'
+camera.preview_configuration.main.format='RGB888'
 camera.preview_configuration.align()
 camera.configure('preview')
 camera.start()
