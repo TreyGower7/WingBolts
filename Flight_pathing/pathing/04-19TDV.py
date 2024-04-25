@@ -9,6 +9,22 @@ baudrate = 57600
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)                                       
 
+def check_GUIDED(master):
+    '''
+    Checks if the mode is in Guided mode
+    '''
+   # Request current flight mode
+    master.mav.command_long_send(
+        master.target_system, master.target_component,
+        mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE, 0, 0, 0, 0, 0, 0, 0, 0)
+    # Wait for response
+    msg = master.recv_match(type='COMMAND_ACK', blocking=True)
+    if msg and msg.command == mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE:
+        print("Current flight mode:", mavutil.mavlink.enums['MAV_MODE_FLAG'][msg.param1].name)
+    else:
+        print("Failed to retrieve flight mode")
+    return msg
+
 #*******Tested and Working*******  
 def altitude_handle(phase):
     '''
@@ -80,7 +96,8 @@ def main():
             msg = receive_telem()  # Assuming receive_telem() returns telemetry data
             row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
             writer.writerow(row)  # Write row to CSV file
-
+    msg = check_GUIDED
+    print(msg)
 
 if __name__ == "__main__":
         main()

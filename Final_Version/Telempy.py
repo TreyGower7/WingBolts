@@ -3,41 +3,26 @@ import random
 import time
 import math
 
-def random_coords(domain):
-    """
-    *********************
-    ** Only Using For Sims **
-    *********************
-    Generate random latitude and longitude within a specified domain.
-
-    Args:
-    Tuple (min_lat, max_lat, min_lon, max_lon)
-
-    Returns:
-    Tuple (latitude, longitude)
-    """
-    min_lat, max_lat, min_lon, max_lon = domain
-    lat = random.uniform(min_lat, max_lat)
-    lon = random.uniform(min_lon, max_lon)
-    coords = {'latitude': lat, 'longitude': lon}
-    return coords
-
-
-def get_obj_coords():
+def check_GUIDED(master):
     '''
-    Gets Telemetry data from Pixhawk
+    Checks if the mode is in Guided mode
     '''
-    domain = (30.320122, 30.324865, -97.603076, -97.598687)  # Boundaries for Arca
-    coords = random_coords(domain)
-    return coords
-
+   # Request current flight mode
+    master.mav.command_long_send(
+        master.target_system, master.target_component,
+        mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE, 0, 0, 0, 0, 0, 0, 0, 0)
+    # Wait for response
+    msg = master.recv_match(type='COMMAND_ACK', blocking=True)
+    if msg and msg.command == mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE:
+        print("Current flight mode:", mavutil.mavlink.enums['MAV_MODE_FLAG'][msg.param1].name)
+    else:
+        print("Failed to retrieve flight mode")
+        
 #****Tested and works*****
 def send_telem(master, waypoints,phase):
-    wp = mavwp.MAVWPLoader()   
     altitude = altitude_handle(phase)                                                 
     seq = 1
     frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    #radius = 10
     N = len(waypoints)
     for i in range(N):    
         master.mav.send(mavutil.mavlink.MAVLink_set_position_target_global_int_message(10, master.target_system,

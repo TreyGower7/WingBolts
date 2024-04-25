@@ -1,10 +1,8 @@
 from Phases import Search_zigzag, predrop_phase
-from Sorting_Distance import haversine_check, sort_obj_waypoints, haversine_high_frequency
+from Sorting_Distance import haversine_check, haversine_high_frequency
 from Telempy import send_telem, haversine_check, check_AUTO, get_obj_coords
-import math
 import time
-from pymavlink import mavutil, mavwp
-
+from pymavlink import mavutil
 """
 Main script for connecting to pixhawk,
 sending/recieving coordinates from raspberry pi to pixhawk 
@@ -20,11 +18,8 @@ baudrate = 57600
 
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
-def get_connection():
-    '''
-    Fuction to send the connection to the ML model
-    '''
-    return master
+master.wait_heartbeat()
+print(f"Heartbeat from system ({master.target_system}, {master.target_component})")
 
 def main():
     ''' Main Func '''
@@ -42,9 +37,6 @@ def main():
             phase = 'SEARCH'
             send_telem(master, waypoints, phase)
             break
-
-    #saves last waypoint for sorting alg
-    #last_waypoint = waypoints[-1]
 
     while phase == 'SEARCH':
         #Auto Pilot Check
@@ -66,59 +58,18 @@ def main():
         #once search is complete we go to next phase
         if len(waypoints) == 0:
             print("All waypoints reached")
-            #phase = 'SURVEILLANCE'
             phase = 'DROP'
-            #Insert waypoints of objects 
-            #****Remember to remove for loop****
-            for i in range(6): #generates 6 random objects
-                Obj_waypoints.append(get_obj_coords())
-
-            #Sorting Algorithmn
-            Obj_waypoints = sort_obj_waypoints(master, last_waypoint, Obj_waypoints)
-            #Send coordinates to pixhawk
-            #****Need to Add Loitering****
-            send_telem(Obj_waypoints, phase)
             break
-    Obj_waypoints = 
-    #*************
-    #***Check target recognition for waypoints of objects***
-    #Obj_waypoints.append(get_object_coords()) Something like this
-    #returns: {'lat': lat, 'lon': lon, 'state': state} of object and stress state too
-    #*************
-    # while phase == 'SURVEILLANCE':
-    #     #Auto Pilot Check
-    #     mode = check_AUTO()
-    #     if mode != 'AUTO':
-    #         while mode != 'AUTO':
-    #             print('Change Mode Back to Auto')
-    #             time.sleep(.5)
-    #             mode = check_AUTO()
-    #             if mode == 'AUTO':
-    #                 print('Mode is Back to Auto')
-    #                 break
-        
-    #     #*************
-    #     #***Check target recognition for refined waypoints and stress state of objects during loiter***
-    #     #refinedobj_waypoints.append(get_object_coords()) Something like this
-    #     #returns: {'lat': lat, 'lon': lon, 'state': state} of object and stress state too
-    #     #*************
 
-    #     #constantly updating waypoints
-    #     print("Checking Waypoint Progress")
-    #     Obj_waypoints = haversine_check(Obj_waypoints,'Update_waypoints', None)
-    #     time.sleep(.2)  #Adjust as needed for the update frequency
-
-    #     #once all objects are checked we go to next phase
-    #     if len(Obj_waypoints) == 0:
-    #         print("All Object Waypoints Reached")
-    #         phase = 'DROP'
-    #         break
-    
+    #Get Waypoints from csv file predrop setup and send to pixhawk
+    for i in range(6): #generates 6 random objects
+        Obj_waypoints.append(get_obj_coords())
     #Set the plane up for payload drop
-    drop_points = predrop_phase(refinedobj_waypoints)
+
+    drop_points = predrop_phase(Obj_waypoints)
 
     #Send sorted drop_point for target coords
-    send_telem(drop_points, phase)
+    send_telem(master, drop_points, phase)
 
     while phase == 'DROP':
          #Auto Pilot Check
@@ -134,7 +85,7 @@ def main():
 
         #constantly updating waypoints
         print("Checking For Payload Drop")
-        drop_points = haversine_high_frequency(drop_points)
+        drop_points = haversine_high_frequency(master, drop_points)
 
         #once payload are dropped we go to mission end
         if len(drop_points) == 0:

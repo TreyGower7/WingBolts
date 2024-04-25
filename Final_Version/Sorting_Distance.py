@@ -8,7 +8,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
     '''
     R = 6371.0  # Radius of the Earth in kilometers
 
-    if use == 'Update_waypoints' or use == 'Drop':
+    if use == 'Update_waypoints' or use == 'DROP':
         #get current position
         msg = receive_telem()
         current_lat = msg.lat
@@ -47,7 +47,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
     if use == 'Distance':
         return distance
     
-    if use == 'Drop':
+    if use == 'DROP':
         if distance <= 0.0009144: #3 feet
             waypoints.pop(0)  # Remove the reached waypoint
             return 'DROP_SIGNAL', waypoints
@@ -59,7 +59,7 @@ def haversine_high_frequency(master, drop_points):
     High frequency update of plane location for the most accurate dropping position
     '''
     while True:
-        Signal, drop_points = haversine_check(master,drop_points, 'Drop', None)
+        Signal, drop_points = haversine_check(master,drop_points, 'DROP', None)
         if Signal == 'DROP_SIGNAL':
             servo_activate()
             break
