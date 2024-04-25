@@ -4,7 +4,7 @@ import time
 import math
 
 
-def check_AUTO():
+def check_AUTO(master):
     '''
     Checks if the mode is in autopilot
     '''
@@ -22,34 +22,28 @@ def check_AUTO():
 #****Tested and works*****
 def send_telem(master, waypoints,phase):
     altitude = altitude_handle(phase)                                                 
-    seq = 1
-    frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    N = len(waypoints)
-    for i in range(N):    
-        master.mav.send(mavutil.mavlink.MAVLink_set_position_target_global_int_message(10, master.target_system,
-                        master.target_component, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, int(0b110111111000), 
-                        int(waypoints[i]['lat'] * 10 ** 7), int(waypoints[i]['lon'] * 10 ** 7), altitude, 0, 0, 0, 0, 0, 0, 0, 0)) 
-            
-        msg = master.recv_match(
-        type='LOCAL_POSITION_NED', blocking=True)
-        print(msg)        
-        # wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
-        #             master.target_component,
-        #             seq,
-        #             frame,
-        #             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-        #             0, 0, 0, radius, 0, 0,
-        #             waypoints[i]['lat'],waypoints[i]['lon'], altitude))
-        seq += 1                                                                       
+       # Clear existing waypoints
+    master.mav.mission_clear_all_send(
+        master.target_system, master.target_component)
+    time.sleep(1)
 
-    # master.waypoint_clear_all_send()                                     
-    # master.waypoint_count_send(wp.count())                          
-
-    # for i in range(wp.count()):
-    #     msg = master.recv_match(type=['MISSION_REQUEST'],blocking=True)             
-    #     master.mav.send(wp.wp(msg.seq))                                                                      
-    #     print(f'Sending waypoint {msg.seq}')    
-
+    # Send new waypoints
+    seq = 0
+    for i in range(len(waypoints)):
+        master.mav.mission_item_send(
+            master.target_system, master.target_component,
+            seq,
+            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
+            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+            0, 0, 0, 0, 0, 0,
+            waypoints[i]['lat'], waypoints[i]['lon'], altitude)
+        seq += 1
+        time.sleep(0.2)  # Add a small delay to ensure waypoints are sent sequentially 
+    while True:
+        msg = master.recv_match(type=['MISSION_ACK'], blocking=True)
+        if msg:
+            print("Waypoints updated successfully")
+            break
 #****Tested and works*****
 def receive_telem(master):
     '''
