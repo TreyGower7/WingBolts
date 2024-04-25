@@ -85,8 +85,8 @@ def log_bboxes():
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string, "Location": tuple(location)})
                     ###
                
-    with open('webcam_bbox_log.txt', 'w') as file:
-        file.writelines([str(log) + '\n' for log in logs])
+    with open('webcam_bbox_log.json', 'w') as file:
+        json.dump(logs, file, indent=4)
 
 
 # Define VideoStream class to handle streaming of video from webcam in separate processing thread
