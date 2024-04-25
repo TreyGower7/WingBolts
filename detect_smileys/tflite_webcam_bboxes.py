@@ -23,7 +23,8 @@ from threading import Thread
 import importlib.util
 import time # new import
 import datetime # new import
-## from ..Flight_pathing.pathing import Telempy as tp
+#import Telempy as tp
+#from Mainloop import get_connection
 
 from picamera2 import Picamera2
 
@@ -71,8 +72,10 @@ def log_bboxes():
                 bbox = [x1, y1, x2, y2, x3, y3, x4, y4]
 
                 time_string = datetime.datetime.fromtimestamp(detection['time']).strftime('%H:%M:%S.%f')
-
-                # plane = tp.receive_telem()
+                
+                #Need the get connection function for getting the planes telemetry
+                #master = get_connection()
+                # plane = tp.receive_telem(master)
                 # location = [plane.lat, plane.lon, plane.alt]
 
                 ### UNCOMMENT FOR JUST TESTING

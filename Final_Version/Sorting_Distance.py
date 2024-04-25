@@ -2,7 +2,7 @@ from Telempy import receive_telem
 import math
 from servoscript import servo_activate
 #*******Tested and Working*******
-def haversine_check(waypoints, use, ref_waypoint):
+def haversine_check(master, waypoints, use, ref_waypoint):
     '''
     Calulates how close plane is to waypoint using angular seperation and the earths radius
     '''
@@ -47,32 +47,32 @@ def haversine_check(waypoints, use, ref_waypoint):
     if use == 'Distance':
         return distance
     
-    if use == 'DROP':
+    if use == 'Drop':
         if distance <= 0.0009144: #3 feet
             waypoints.pop(0)  # Remove the reached waypoint
             return 'DROP_SIGNAL', waypoints
         else:
             return 'WAIT', None
 
-def haversine_high_frequency(drop_points):
+def haversine_high_frequency(master, drop_points):
     '''
     High frequency update of plane location for the most accurate dropping position
     '''
     while True:
-        Signal, drop_points = haversine_check(drop_points, 'DROP', None)
+        Signal, drop_points = haversine_check(master,drop_points, 'Drop', None)
         if Signal == 'DROP_SIGNAL':
             servo_activate()
             break
     return drop_points
 
 #*******Tested and Working*******
-def sort_obj_waypoints(reference_waypoint, Obj_waypoints): 
+def sort_obj_waypoints(master,reference_waypoint, Obj_waypoints): 
     '''
     sort the waypoints of the objects from closest to farthest
     '''
     
     #Calculate distances and store them along with object waypoints
-    obj_distances = [(waypoint, haversine_check(waypoint, 'Distance', reference_waypoint)) for waypoint in Obj_waypoints]
+    obj_distances = [(waypoint, haversine_check(master,waypoint, 'Distance', reference_waypoint)) for waypoint in Obj_waypoints]
     
     #Sort the object waypoints based on distances
     sorted_obj = [waypoint for waypoint, _ in sorted(obj_distances, key=lambda x: x[1])]

@@ -3,14 +3,6 @@ import random
 import time
 import math
 
-# Set the connection parameters (change accordingly)
-connection_string = '/dev/ttyAMA0' # UART connection
-baudrate = 57600   
-
-# Connect to the Pixhawk
-master = mavutil.mavlink_connection(connection_string, baud=baudrate)
-
-
 def random_coords(domain):
     """
     *********************
@@ -40,33 +32,40 @@ def get_obj_coords():
     return coords
 
 #****Tested and works*****
-def send_telem(waypoints,phase):
+def send_telem(master, waypoints,phase):
     wp = mavwp.MAVWPLoader()   
     altitude = altitude_handle(phase)                                                 
     seq = 1
     frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    radius = 10
+    #radius = 10
     N = len(waypoints)
-    for i in range(N):                  
-        wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
-                    master.target_component,
-                    seq,
-                    frame,
-                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-                    0, 0, 0, radius, 0, 0,
-                    waypoints[i]['lat'],waypoints[i]['lon'], altitude))
+    for i in range(N):    
+        master.mav.send(mavutil.mavlink.MAVLink_set_position_target_global_int_message(10, master.target_system,
+                        master.target_component, mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT, int(0b110111111000), 
+                        int(waypoints[i]['lat'] * 10 ** 7), int(waypoints[i]['lon'] * 10 ** 7), altitude, 0, 0, 0, 0, 0, 0, 0, 0)) 
+            
+        msg = master.recv_match(
+        type='LOCAL_POSITION_NED', blocking=True)
+        print(msg)        
+        # wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
+        #             master.target_component,
+        #             seq,
+        #             frame,
+        #             mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+        #             0, 0, 0, radius, 0, 0,
+        #             waypoints[i]['lat'],waypoints[i]['lon'], altitude))
         seq += 1                                                                       
 
-    master.waypoint_clear_all_send()                                     
-    master.waypoint_count_send(wp.count())                          
+    # master.waypoint_clear_all_send()                                     
+    # master.waypoint_count_send(wp.count())                          
 
-    for i in range(wp.count()):
-        msg = master.recv_match(type=['MISSION_REQUEST'],blocking=True)             
-        master.mav.send(wp.wp(msg.seq))                                                                      
-        print(f'Sending waypoint {msg.seq}')    
+    # for i in range(wp.count()):
+    #     msg = master.recv_match(type=['MISSION_REQUEST'],blocking=True)             
+    #     master.mav.send(wp.wp(msg.seq))                                                                      
+    #     print(f'Sending waypoint {msg.seq}')    
 
 #****Tested and works*****
-def receive_telem():
+def receive_telem(master):
     '''
     receives telemetry data from pixhawk to pi
     '''
@@ -87,9 +86,9 @@ def altitude_handle(phase):
     '''
     #Altitudes are in meters
     if phase == 'SEARCH':
-        return 91.44
-    if phase == 'SURVEILLANCE' or phase == 'END_MISSION': 
-        return 45.72  
+        return 76.2 
     if phase == 'DROP':
         #dunno what we want here
         return 25.908
+    if phase == 'END_MISSION': 
+        return 45.72 

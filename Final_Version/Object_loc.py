@@ -9,8 +9,10 @@ sensor_width_mm = 4.712 # Camera sensor width in millimeters
 focal_length_mm = 16    # Focal length in millimeters
 
 # Camera resolution (assuming square pixels for simplicity)
-image_width = 2048
-image_height = 1520
+# image_width = 2048
+# image_height = 1520
+image_width = 1456
+image_height = 1088
 
 
 def get_bounding_box(log) -> np.array:
@@ -60,7 +62,7 @@ def get_unique_target(target_info):
 
 
     #distance = math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
-    distance = haversine_check(waypoint1, 'Distance', target_wp)
+    distance = haversine_check(None, waypoint1, 'Distance', target_wp)
     # threshold at 0.01 km
     if distance > 0.01: # roughly 32 feet
       unique_target_info.append(detection)
