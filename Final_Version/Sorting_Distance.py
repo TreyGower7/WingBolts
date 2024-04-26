@@ -49,7 +49,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
         return distance
     
     if use == 'DROP':
-        if distance <= 0.0009144: #3 feet
+        if distance <= 0.0021336: #7 feet
             waypoints.pop(0)  # Remove the reached waypoint
             return 'DROP_SIGNAL', waypoints
         else:
