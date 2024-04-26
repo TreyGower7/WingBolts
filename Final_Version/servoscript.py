@@ -1,9 +1,6 @@
 from gpiozero import Servo
 from time import sleep
 
-from gpiozero import Servo
-from time import sleep
-
 # Define servo and PWM values
 servo = Servo(26)
 neutral_pwm = 0   # Neutral position
