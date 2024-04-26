@@ -4,6 +4,7 @@ from Telempy import send_telem, check_AUTO, receive_telem
 import time
 from pymavlink import mavutil
 import json
+from Object_loc import Obj_main
 
 """
 Main script for connecting to pixhawk,
@@ -143,7 +144,8 @@ def main():
             print("All waypoints reached")
             phase = 'DROP'
             break
-
+    #Convert Bounding Boxes to Locations
+    Obj_main()
     #Get Waypoints from json file predrop setup and send to pixhawk
     with open('Final_Version/target_coords.json', 'r') as f:
         Obj_waypoints = json.loads(f)
