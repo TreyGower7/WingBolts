@@ -9,21 +9,23 @@ baudrate = 57600
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)                                       
 
-def check_GUIDED(master):
+def check_AUTO():
     '''
-    Checks if the mode is in Guided mode
+    Checks if the mode is in autopilot
     '''
-   # Request current flight mode
-    master.mav.command_long_send(
-        master.target_system, master.target_component,
-        mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE, 0, 0, 0, 0, 0, 0, 0, 0)
-    # Wait for response
-    msg = master.recv_match(type='COMMAND_ACK', blocking=True)
-    if msg and msg.command == mavutil.mavlink.MAV_CMD_REQUEST_FLIGHT_MODE:
-        print("Current flight mode:", mavutil.mavlink.enums['MAV_MODE_FLAG'][msg.param1].name)
+    msg = master.recv_match(type='HEARTBEAT', blocking=True)
+    current_mode = mavutil.mode_string_v10(msg)
+    # Extract mode from the heartbeat message
+    current_mode = msg.custom_mode
+
+    print("Current Mode:", current_mode)
+    # Check if current mode is "AUTO"
+    if current_mode == 10:
+        print("Mode is autopilot (AUTO)")
+        return 'AUTO'
     else:
-        print("Failed to retrieve flight mode")
-    return msg
+        print("Mode is not autopilot")
+        return None
 
 #*******Tested and Working*******  
 def altitude_handle(phase):
@@ -37,29 +39,29 @@ def altitude_handle(phase):
         return 45.72  
     
 def send_telem(waypoints,phase):
+    wp = mavwp.MAVWPLoader()   
     altitude = altitude_handle(phase)                                                 
-       # Clear existing waypoints
-    master.mav.mission_clear_all_send(
-        master.target_system, master.target_component)
-    time.sleep(1)
+    seq = 1
+    frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
+    radius = 10
+    N = len(waypoints)
+    for i in range(N):                  
+        wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
+                    master.target_component,
+                    seq,
+                    frame,
+                    mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
+                    0, 0, 0, radius, 0, 0,
+                    waypoints[i]['lat'],waypoints[i]['lon'], altitude))
+        seq += 1                                                                       
 
-    # Send new waypoints
-    seq = 0
-    for i in range(len(waypoints)):
-        master.mav.mission_item_send(
-            master.target_system, master.target_component,
-            seq,
-            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,
-            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,
-            0, 0, 0, 0, 0, 0,
-            waypoints[i]['lat'], waypoints[i]['lon'], altitude)
-        seq += 1
-        time.sleep(0.2)  # Add a small delay to ensure waypoints are sent sequentially 
-    while True:
-        msg = master.recv_match(type=['MISSION_ACK'], blocking=True)
-        if msg:
-            print("Waypoints updated successfully")
-            break
+    master.waypoint_clear_all_send()                                     
+    master.waypoint_count_send(wp.count())                          
+
+    for i in range(wp.count()):
+        msg = master.recv_match(type=['MISSION_REQUEST'],blocking=True)             
+        master.mav.send(wp.wp(msg.seq))                                                                      
+        print(f'Sending waypoint {msg.seq}')  
 
 def receive_telem():
     '''
@@ -87,17 +89,16 @@ def main():
     send_telem(waypoints,'search')
 
     # Define the filename
-    filename = 'Telem_Test.csv'
+  #  filename = 'Telem_Test.csv'
 
-    with open(filename, 'w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
-        for i in range(20):
-            msg = receive_telem()  # Assuming receive_telem() returns telemetry data
-            row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
-            writer.writerow(row)  # Write row to CSV file
-    msg = check_GUIDED
-    print(msg)
+  #  with open(filename, 'w', newline='') as f:
+  #      writer = csv.writer(f)
+  #      writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
+  #      for i in range(20):
+  #          msg = receive_telem()  # Assuming receive_telem() returns telemetry data
+  #          row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
+  #          writer.writerow(row)  # Write row to CSV file
+    check_AUTO()
 
 if __name__ == "__main__":
         main()

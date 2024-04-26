@@ -1,6 +1,6 @@
 from Phases import Search_zigzag, predrop_phase
 from Sorting_Distance import haversine_check, haversine_high_frequency
-from Telempy import send_telem, haversine_check, check_AUTO, get_obj_coords
+from Telempy import send_telem, haversine_check, check_AUTO, receive_telem
 import time
 from pymavlink import mavutil
 
@@ -32,12 +32,39 @@ def main():
         mode = check_AUTO()
         print('Waiting on Autopilot Mode')
         if mode == 'AUTO':
-            #Populate Coordinates for Search phase
-            waypoints = Search_zigzag()
-            #populate waypoints for initial search phase
-            phase = 'SEARCH'
-            send_telem(master, waypoints, phase)
             break
+
+    # after 3 nautical miles: 1 meter = 0.000539957 miles
+    while mode is None: 
+
+        firstWaypoints = [
+            {"lat":   30.322588, "lon":  -97.602679},
+            {"lat": 30.322291634213112, "lon": -97.6018262396288},
+            {"lat":  30.323143653772693, "lon": -97.60142927270336},
+            {"lat": 30.325269418344888, "lon": -97.60358765983898},
+            {"lat": 30.32556423886435, "lon": -97.60242970541643},
+            {"lat": 30.323148122665625, "lon": -97.60268795424491}]
+
+        for i in range(0,6):
+        
+            for i in len(firstWaypoints):
+
+                # calulates distance in kilometers
+                distance = haversine_check(None, firstWaypoints[i], 'Distance', firstWaypoints[i+1])
+
+                # kilometers to nautical miles
+                nautMiles = distance * 0.539957
+
+                if nautMiles >= 3:
+                    break 
+                else: 
+                    continue
+
+    #Populate Coordinates for Search phase
+    waypoints = Search_zigzag()
+    #populate waypoints for initial search phase
+    phase = 'SEARCH'
+    send_telem(master, waypoints, phase)
 
     while phase == 'SEARCH':
         #Auto Pilot Check
