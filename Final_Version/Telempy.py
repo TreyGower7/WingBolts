@@ -9,8 +9,12 @@ def check_AUTO(master):
     '''
     msg = master.recv_match(type='HEARTBEAT', blocking=True)
     current_mode = mavutil.mode_string_v10(msg)
+    # Extract mode from the heartbeat message
+    current_mode = msg.custom_mode
+
+    print("Current Mode:", current_mode)
     # Check if current mode is "AUTO"
-    if current_mode == 'Mode(0x00000004)' or current_mode == 'Mode(0x000000c0)':
+    if current_mode == 10:
         print("Mode is autopilot (AUTO)")
         return 'AUTO'
     else:
