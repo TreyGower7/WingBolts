@@ -43,7 +43,7 @@ def send_telem(waypoints,phase):
     altitude = altitude_handle(phase)                                                 
     seq = 1
     frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    radius = 10
+    radius = 5
     N = len(waypoints)
     for i in range(N):                  
         wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
@@ -79,26 +79,39 @@ def receive_telem():
     
 def main():
     waypoints = [
-        {"lat": 30.323221, "lon":  -97.602798},
-        {"lat": 30.323180, "lon": -97.601598},
-        {"lat": 30.323715, "lon": -97.603007},
-        {"lat": 30.324627, "lon": -97.602312},
-        {"lat": 30.325696, "lon": -97.603918},
+    {"lat":   30.322588, "lon":  -97.602679},
+    {"lat": 30.322291634213112, "lon": -97.6018262396288},
+    {"lat":  30.323143653772693, "lon": -97.60142927270336},
+    {"lat": 30.325269418344888, "lon": -97.60358765983898},
+    {"lat": 30.32556423886435, "lon": -97.60242970541643},
+    {"lat": 30.323148122665625, "lon": -97.60268795424491},
+    {"lat":   30.322588, "lon":  -97.602679},
+    {"lat": 30.322291634213112, "lon": -97.6018262396288},
+    {"lat":  30.323143653772693, "lon": -97.60142927270336},
+    {"lat": 30.325269418344888, "lon": -97.60358765983898},
+    {"lat": 30.32556423886435, "lon": -97.60242970541643},
+    {"lat": 30.323148122665625, "lon": -97.60268795424491},
     ]   
+    while mode is None:
+        mode = check_AUTO(master)
+        print('Waiting on Autopilot Mode')
+        if mode == 'AUTO':
+            phase = 'SEARCH'
+            send_telem(waypoints,phase)
+            break
 
-    send_telem(waypoints,'search')
+    
 
     # Define the filename
-  #  filename = 'Telem_Test.csv'
+    filename = 'Telem_Test.csv'
 
-  #  with open(filename, 'w', newline='') as f:
-  #      writer = csv.writer(f)
-  #      writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
-  #      for i in range(20):
-  #          msg = receive_telem()  # Assuming receive_telem() returns telemetry data
-  #          row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
-  #          writer.writerow(row)  # Write row to CSV file
-    check_AUTO()
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
+        for i in range(50):
+            msg = receive_telem()  # Assuming receive_telem() returns telemetry data
+            row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
+            writer.writerow(row)  # Write row to CSV file
 
 if __name__ == "__main__":
         main()
