@@ -23,8 +23,8 @@ from threading import Thread
 import importlib.util
 import time # new import
 import datetime # new import
-#import Telempy as tp
-#from Mainloop import get_connection
+import Telempy as tp
+from Mainloop import get_connection
 
 from picamera2 import Picamera2
 
@@ -74,16 +74,21 @@ def log_bboxes():
                 time_string = datetime.datetime.fromtimestamp(detection['time']).strftime('%H:%M:%S.%f')
                 
                 #Need the get connection function for getting the planes telemetry
-                #master = get_connection()
-                # plane = tp.receive_telem(master)
-                # location = [plane.lat, plane.lon, plane.alt]
+                master = get_connection()
+                plane = tp.receive_telem(master)
+                location = [plane.lat, plane.lon, plane.alt]
 
                 ### UNCOMMENT FOR JUST TESTING
-                location = [34.23483, 92.32423, 312.432]
+                # location = [34.23483, 92.32423, 312.432]
 
                 if abs(x_0-x_checkclose) > 30:
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string, "Location": tuple(location)})
-                    ###
+
+                    # log detection pics
+                    time_string2 = datetime.datetime.fromtimestamp(detection['time']).strftime('%H.%M.%S.%f')
+                    filename = f'detection_ss/{time_string2}.jpg'
+                    if not os.path.exists(filename):
+                        cv2.imwrite(filename, frame)
                
     with open('webcam_bbox_log.txt', 'w') as file:
         file.writelines([str(log) + '\n' for log in logs])
@@ -295,11 +300,11 @@ while True:
             """
             # Update bounding box info
             bbox_data.append({'class': object_name, 'bbox': [xmin, ymin, xmax, ymax], 'time':time.time()})
-
     
-    # Log bounding boxes that have been detected for >0.1 seconds
-    log_bboxes()
+            # Log bounding boxes that have been detected for >0.1 seconds
+            log_bboxes()
 
+    ### UNCOMMENT TO SEE OUTPUT, COMMENT DURING FLIGHT
     # Draw framerate in corner of frame
     cv2.putText(frame,'FPS: {0:.2f}'.format(frame_rate_calc),(30,50),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,0),2,cv2.LINE_AA)
 
