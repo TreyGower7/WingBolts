@@ -57,6 +57,7 @@ def get_unique_target(target_info):
     lon2 = target_info[i-1]['lon']
 
     distance = math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
+    print(f'distance between detections: {distance}')
     # threshold at 0.0001 lat/lon
     if distance > 0.0001: 
       unique_target_info.append(detection)
@@ -116,8 +117,12 @@ def main():
       writer = csv.DictWriter(f, fieldnames=field_names)
       writer.writeheader()
       writer.writerows(unique_target_info)
+
+  with open('target_coords.json', 'w') as f2:
+    json.dump(unique_target_info, f2, indent=4)
   
-  print("wrote coords to csv")
+  print("wrote coords to target_coords.csv")
+  print("wrote coords to target_coords.json")
 
 
 if __name__ == '__main__':
