@@ -69,9 +69,11 @@ def altitude_handle(phase):
     '''
     #Altitudes are in meters
     if phase == 'SEARCH':
-        return 76.2 
+        return 91.44
+    if phase == 'SURVEILLANCE':
+        return 60.96
     if phase == 'DROP':
         #dunno what we want here
         return 25.908
-    if phase == 'END_MISSION': 
-        return 45.72 
+    if phase == 'PRE_MISSION': 
+        return 91.44 

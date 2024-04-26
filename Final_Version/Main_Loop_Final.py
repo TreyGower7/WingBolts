@@ -33,7 +33,9 @@ def main():
         mode = check_AUTO(master)
         print('Waiting on Autopilot Mode')
         if mode == 'AUTO':
+            phase = 'PRE_MISSION'
             break
+
     distance = 0
     firstWaypoints = [
             {"lat":   30.322588, "lon":  -97.602679},
@@ -42,6 +44,7 @@ def main():
             {"lat": 30.325269418344888, "lon": -97.60358765983898},
             {"lat": 30.32556423886435, "lon": -97.60242970541643},
             {"lat": 30.323148122665625, "lon": -97.60268795424491}]
+    firstWaypoints_copy = firstWaypoints
     for i in range(len(firstWaypoints)):
         distance += haversine_check(None, firstWaypoints[i-1], 'Distance', firstWaypoints[i])
     #Distance of one loop # after 3 nautical miles: 1 meter = 0.000539957 miles
@@ -52,16 +55,12 @@ def main():
         total_naut_miles += nautMiles
         numofloops += 1;
         print(total_naut_miles)
-        for i in range(numofloops):
-            send_telem()
+    for i in range(numofloops):
+        send_telem(master, waypoints, phase)
+        #For the Next loop
+        firstWaypoints.append(firstWaypoints)
 
-    #Populate Coordinates for Search phase
-    waypoints = Search_zigzag()
-    #populate waypoints for initial search phase
-    phase = 'SEARCH'
-    send_telem(master, waypoints, phase)
-
-    while phase == 'SEARCH':
+    while phase == 'PRE_MISSION':
         #Auto Pilot Check
         mode = check_AUTO(master)
         if mode != 'AUTO':
@@ -74,8 +73,69 @@ def main():
                     break
         #constantly updating waypoints
         print("Checking Waypoint Progress")
+        firstWaypoints = haversine_check(master, firstWaypoints, 'Update_waypoints', None)        
+
+        time.sleep(.2)  #Adjust as needed for the update frequency
+
+        #need to repopulate waypoints due to how I wrote the code
+        if len(firstWaypoints) == 0 and pre != numofloops:
+            print("All waypoints reached")
+            pre += 1
+            firstWaypoints = firstWaypoints_copy
+            continue
+        if len(firstWaypoints) == 0 and pre == numofloops:
+            #Populate Coordinates for Search phase
+            waypoints = Search_zigzag()
+            #populate waypoints for initial search phase
+            phase = 'SEARCH'
+            send_telem(master, waypoints, phase)
+            break
+
+
+    while phase == 'SEARCH':
+        #Auto Pilot Check
+        mode = check_AUTO(master)
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO(master)
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
+
+        #constantly updating waypoints
+        print("Checking Waypoint Progress")
         waypoints = haversine_check(master, waypoints, 'Update_waypoints', None)        
     
+        time.sleep(.2)  #Adjust as needed for the update frequency
+
+        #once search is complete we go to next phase
+        if len(waypoints) == 0:
+            print("All waypoints reached")
+            phase = 'SURVEILLANCE'
+            #Populate Coordinates for Search phase
+            waypoints = Search_zigzag()
+            #populate waypoints for initial search phase
+            send_telem(master, waypoints, phase)
+            break
+    #Another phase that changes altitude
+    while phase == 'SURVEILLANCE':
+        #Auto Pilot Check
+        mode = check_AUTO(master)
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO(master)
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
+                
+        #constantly updating waypoints
+        print("Checking Waypoint Progress")
+        waypoints = haversine_check(master, waypoints, 'Update_waypoints', None)        
+
         time.sleep(.2)  #Adjust as needed for the update frequency
 
         #once search is complete we go to next phase
