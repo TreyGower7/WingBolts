@@ -68,7 +68,7 @@ def get_unique_target(target_info):
 
   return unique_target_info
 
-def main():
+def Obj_main():
   # Read JSON file
   with open('webcam_bbox_log.json', 'r') as json_file:
     logs = json.load(json_file)
@@ -127,7 +127,3 @@ def main():
   
   print("wrote coords to target_coords.csv")
   print("wrote coords to target_coords.json")
-
-
-if __name__ == '__main__':
-  main()
