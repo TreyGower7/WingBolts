@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import random as rd     # dont need for final code
 import csv
 import json
 import math
@@ -9,10 +10,8 @@ sensor_width_mm = 4.712 # Camera sensor width in millimeters
 focal_length_mm = 16    # Focal length in millimeters
 
 # Camera resolution (assuming square pixels for simplicity)
-# image_width = 2048
-# image_height = 1520
-image_width = 1456
-image_height = 1088
+image_width = 2048
+image_height = 1520
 
 
 def get_bounding_box(log) -> np.array:
@@ -53,18 +52,18 @@ def get_unique_target(target_info):
   """
   unique_target_info = []
   for i, detection in enumerate(target_info):
-    lat1 = detection['lat']
+    lat1 = detection["lat"]
     lon1 = detection['lon']
-    waypoint1 = {'lat': lat1, 'lon': lon1}
     lat2 = target_info[i-1]['lat']
     lon2 = target_info[i-1]['lon']
-    target_wp = {'lat': lat2, 'lon': lon2}
 
+    point1 = {"lat": lat1, "lon": lon1}
+    point2 = {"lat": lat2, "lon": lon2}
 
-    #distance = math.sqrt((lat1 - lat2)**2 + (lon1 - lon2)**2)
-    distance = haversine_check(None, waypoint1, 'Distance', target_wp)
-    # threshold at 0.01 km
-    if distance > 0.01: # roughly 32 feet
+    distance = haversine_check(None, point1, "Distance", point2)
+    print(f'distance between detections: {distance}')
+    # threshold at 0.0001 lat/lon
+    if distance > 0.0001: 
       unique_target_info.append(detection)
 
   return unique_target_info
@@ -122,8 +121,12 @@ def main():
       writer = csv.DictWriter(f, fieldnames=field_names)
       writer.writeheader()
       writer.writerows(unique_target_info)
+
+  with open('target_coords.json', 'w') as f2:
+    json.dump(unique_target_info, f2, indent=4)
   
-  print("wrote coords to csv")
+  print("wrote coords to target_coords.csv")
+  print("wrote coords to target_coords.json")
 
 
 if __name__ == '__main__':
