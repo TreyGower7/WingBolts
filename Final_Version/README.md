@@ -16,6 +16,12 @@ all waypoints are reached):
 ### Run this commands on the raspberry pi Pre-Flight: 
 Send waypoints to fly the plane to at ARCA (runs in a loop until 
 all waypoints are reached):
+
+```
+function test() {
+  console.log("sudo python3 04-26TDV.py --master=/dev/tty/AMA0");
+}
+```
 `sudo python3 04-26TDV.py --master=/dev/tty/AMA0`
 
 ***NOTE: Once the script is ran takeoff manually and then ensure 
