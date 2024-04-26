@@ -154,6 +154,7 @@ def main():
 
     #Send sorted drop_point for target coords
     send_telem(master, drop_points, phase)
+    adp = 1
 
     while phase == 'DROP':
          #Auto Pilot Check
@@ -169,8 +170,8 @@ def main():
 
         #constantly updating waypoints
         print("Checking For Payload Drop")
-        drop_points = haversine_high_frequency(master, drop_points)
-
+        drop_points = haversine_high_frequency(master, drop_points, adp)
+        adp += 1
         #once payload are dropped we go to mission end
         if len(drop_points) == 0:
             print("All Payloads Dropped To Targets")
