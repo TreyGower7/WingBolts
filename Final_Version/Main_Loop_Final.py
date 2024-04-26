@@ -1,6 +1,6 @@
 from Phases import Search_zigzag, predrop_phase
 from Sorting_Distance import haversine_check, haversine_high_frequency
-from Telempy import send_telem, haversine_check, check_AUTO, receive_telem
+from Telempy import send_telem, check_AUTO, receive_telem
 import time
 from pymavlink import mavutil
 import json
