@@ -1,6 +1,10 @@
 from pymavlink import mavutil
 import time
 
+connection_string = '/dev/ttyAMA0' #Pin connectors for Pi
+#connection_string = '/dev/ttys039' #virtual connection for testing
+
+baudrate = 57600  
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)
 master.wait_heartbeat()
