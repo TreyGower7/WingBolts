@@ -11,23 +11,27 @@ master.wait_heartbeat()
 print(f"Heartbeat from system ({master.target_system}, {master.target_component})")
 
 # Function to send waypoints to QGroundControl
-def send_waypoints(connection, waypoints):
+def send_waypoints(waypoints):
     # Clear existing mission items
     connection.waypoint_clear_all_send()
     time.sleep(1)
-
     # Add new waypoints
     for idx, waypoint in enumerate(waypoints):
-        msg = connection.mav.mission_item_send(
-            connection.target_system, connection.target_component,
-            idx,              # Sequence
-            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT,  # Frame
-            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,           # Command
-            0,                # Current
-            0,                # Autocontinue
-            0, 0, 0,          # Params 1-3 (Hold time, Acceptance radius, Pass radius)
-            waypoint['latitude'], waypoint['longitude'], waypoint['altitude']  # Params 4-6 (Latitude, Longitude, Altitude)
+        msg = mavutil.mavlink.MAVLink_mission_item_int_message(
+            1,              # Target system
+            1,              # Target component
+            idx,            # Sequence
+            mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT_INT,  # Frame
+            mavutil.mavlink.MAV_CMD_NAV_WAYPOINT,   # Command
+            0,              # Current
+            1,              # Autocontinue
+            0, 0, 0,        # Params 1-3 (Hold time, Acceptance radius, Pass radius)
+            int(waypoint['latitude'] * 1e7),       # Latitude (in degrees * 1e7)
+            int(waypoint['longitude'] * 1e7),      # Longitude (in degrees * 1e7)
+            waypoint['altitude'] * 1000,           # Altitude (in meters * 1000)
+            0               # Mission type
         )
+        master.mav.send(msg)
         time.sleep(0.2)  # Add a small delay between each waypoint
 
 # Example waypoints (latitude, longitude, altitude in meters)
@@ -37,10 +41,8 @@ waypoints = [
     {'latitude': 47.641476, 'longitude': -122.139891, 'altitude': 30}
 ]
 
-# Connection to QGroundControl
-
 # Send waypoints
-send_waypoints(master, waypoints)
+send_waypoints(waypoints)
 
 # Close connection
 master.close()
