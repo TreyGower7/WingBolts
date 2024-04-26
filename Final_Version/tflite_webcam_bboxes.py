@@ -242,6 +242,10 @@ camera.configure('preview')
 camera.start()
 time.sleep(1)
 
+# Define codec and create VideoWriter object for MP4
+fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # Define codec (codec for MP4 format)
+out = cv2.VideoWriter('video_recording.mp4', fourcc, 4.0, (640, 480))  # Output filename, codec, FPS, frame size
+
 #for frame1 in camera.capture_continuous(rawCapture, format="bgr",use_video_port=True):
 while True:
 
@@ -256,6 +260,8 @@ while True:
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     frame_resized = cv2.resize(frame_rgb, (width, height))
     input_data = np.expand_dims(frame_resized, axis=0)
+
+    out.write(frame)
 
     # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
     if floating_model:
@@ -285,15 +291,16 @@ while True:
             ymax = int(min(imH,(boxes[i][2] * imH)))
             xmax = int(min(imW,(boxes[i][3] * imW)))
             
-            cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
+            ### UNCOMMENT LINES BELOW TO DISPLAY BOX 
+            # cv2.rectangle(frame, (xmin,ymin), (xmax,ymax), (10, 255, 0), 2)
 
             # Draw label
             object_name = labels[int(classes[i])] # Look up object name from "labels" array using class index
             label = '%s: %d%%' % (object_name, int(scores[i]*100)) # Example: 'person: 72%'
             labelSize, baseLine = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2) # Get font size
             label_ymin = max(ymin, labelSize[1] + 10) # Make sure not to draw label too close to top of window
-            cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
-            cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
+            # cv2.rectangle(frame, (xmin, label_ymin-labelSize[1]-10), (xmin+labelSize[0], label_ymin+baseLine-10), (255, 255, 255), cv2.FILLED) # Draw white box to put label text in
+            # cv2.putText(frame, label, (xmin, label_ymin-7), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2) # Draw label text
             """
             NEW STUFF HERE
             """
@@ -311,9 +318,9 @@ while True:
     # cv2.imshow('Object detector', frame)
 
     # Calculate framerate
-    t2 = cv2.getTickCount()
-    time1 = (t2-t1)/freq
-    frame_rate_calc= 1/time1
+    # t2 = cv2.getTickCount()
+    # time1 = (t2-t1)/freq
+    # frame_rate_calc= 1/time1
 
     # Press 'q' to quit
     if cv2.waitKey(1) == ord('q'):
