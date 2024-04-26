@@ -3,16 +3,14 @@ import random
 import time
 import math
 
-
 def check_AUTO(master):
     '''
     Checks if the mode is in autopilot
     '''
     msg = master.recv_match(type='HEARTBEAT', blocking=True)
     current_mode = mavutil.mode_string_v10(msg)
-            
     # Check if current mode is "AUTO"
-    if current_mode == "AUTO":
+    if current_mode == 'Mode(0x00000004)' or current_mode == 'Mode(0x000000c0)':
         print("Mode is autopilot (AUTO)")
         return 'AUTO'
     else:
