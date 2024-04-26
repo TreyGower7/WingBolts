@@ -3,6 +3,7 @@ from Sorting_Distance import haversine_check, haversine_high_frequency
 from Telempy import send_telem, haversine_check, check_AUTO, receive_telem
 import time
 from pymavlink import mavutil
+import json
 
 """
 Main script for connecting to pixhawk,
@@ -29,36 +30,30 @@ def main():
     Obj_waypoints = []
     #Ensures we manually set the mode to AUTO
     while mode is None:
-        mode = check_AUTO()
+        mode = check_AUTO(master)
         print('Waiting on Autopilot Mode')
         if mode == 'AUTO':
             break
-
-    # after 3 nautical miles: 1 meter = 0.000539957 miles
-    while mode is None: 
-
-        firstWaypoints = [
+    distance = 0
+    firstWaypoints = [
             {"lat":   30.322588, "lon":  -97.602679},
             {"lat": 30.322291634213112, "lon": -97.6018262396288},
             {"lat":  30.323143653772693, "lon": -97.60142927270336},
             {"lat": 30.325269418344888, "lon": -97.60358765983898},
             {"lat": 30.32556423886435, "lon": -97.60242970541643},
             {"lat": 30.323148122665625, "lon": -97.60268795424491}]
-
-        for i in range(0,6):
-        
-            for i in len(firstWaypoints):
-
-                # calulates distance in kilometers
-                distance = haversine_check(None, firstWaypoints[i], 'Distance', firstWaypoints[i+1])
-
-                # kilometers to nautical miles
-                nautMiles = distance * 0.539957
-
-                if nautMiles >= 3:
-                    break 
-                else: 
-                    continue
+    for i in range(len(firstWaypoints)):
+        distance += haversine_check(None, firstWaypoints[i-1], 'Distance', firstWaypoints[i])
+    #Distance of one loop # after 3 nautical miles: 1 meter = 0.000539957 miles
+    nautMiles = distance * 0.539957
+    total_naut_miles = 0
+    numofloops = 0
+    while total_naut_miles <= 3:
+        total_naut_miles += nautMiles
+        numofloops += 1;
+        print(total_naut_miles)
+        for i in range(numofloops):
+            send_telem()
 
     #Populate Coordinates for Search phase
     waypoints = Search_zigzag()
@@ -68,12 +63,12 @@ def main():
 
     while phase == 'SEARCH':
         #Auto Pilot Check
-        mode = check_AUTO()
+        mode = check_AUTO(master)
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
                 time.sleep(.5)
-                mode = check_AUTO()
+                mode = check_AUTO(master)
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
                     break
@@ -89,8 +84,9 @@ def main():
             phase = 'DROP'
             break
 
-    #Get Waypoints from csv file predrop setup and send to pixhawk
-    Obj_waypoints = 
+    #Get Waypoints from json file predrop setup and send to pixhawk
+    with open('Final_Version/target_coords.json', 'r') as f:
+        Obj_waypoints = json.loads(f)
 
     #Set the plane up for payload drop
 
@@ -101,12 +97,12 @@ def main():
 
     while phase == 'DROP':
          #Auto Pilot Check
-        mode = check_AUTO()
+        mode = check_AUTO(master)
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
                 time.sleep(.5)
-                mode = check_AUTO()
+                mode = check_AUTO(master)
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
                     break
