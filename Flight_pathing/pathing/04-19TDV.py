@@ -9,15 +9,14 @@ baudrate = 57600
 # Connect to the Pixhawk
 master = mavutil.mavlink_connection(connection_string, baud=baudrate)                                       
 
-def check_AUTO(master):
+def check_AUTO():
     '''
     Checks if the mode is in autopilot
     '''
     msg = master.recv_match(type='HEARTBEAT', blocking=True)
     current_mode = mavutil.mode_string_v10(msg)
-            
     # Check if current mode is "AUTO"
-    if current_mode == "AUTO":
+    if current_mode == 'Mode(0x00000004)' or current_mode == 'Mode(0x000000c0)':
         print("Mode is autopilot (AUTO)")
         return 'AUTO'
     else:
