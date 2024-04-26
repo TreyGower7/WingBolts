@@ -15,6 +15,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
         current_lon = msg.lon
         waypoint_lat = waypoints[0]['lat']
         waypoint_lon = waypoints[0]['lon']
+        
     if use == 'Distance':
         #only requires one point for input
         current_lat = ref_waypoint['lat']
