@@ -85,20 +85,25 @@ def main():
         {"lat": 30.324627, "lon": -97.602312},
         {"lat": 30.325696, "lon": -97.603918},
     ]   
+    while mode is None:
+        mode = check_AUTO(master)
+        print('Waiting on Autopilot Mode')
+        if mode == 'AUTO':
+            phase = 'PRE_MISSION'
+            break
 
     send_telem(waypoints,'search')
 
     # Define the filename
-  #  filename = 'Telem_Test.csv'
+    filename = 'Telem_Test.csv'
 
-  #  with open(filename, 'w', newline='') as f:
-  #      writer = csv.writer(f)
-  #      writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
-  #      for i in range(20):
-  #          msg = receive_telem()  # Assuming receive_telem() returns telemetry data
-  #          row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
-  #          writer.writerow(row)  # Write row to CSV file
-    check_AUTO()
+    with open(filename, 'w', newline='') as f:
+        writer = csv.writer(f)
+        writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
+        for i in range(20):
+            msg = receive_telem()  # Assuming receive_telem() returns telemetry data
+            row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
+            writer.writerow(row)  # Write row to CSV file
 
 if __name__ == "__main__":
         main()

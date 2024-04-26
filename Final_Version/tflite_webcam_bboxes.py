@@ -24,8 +24,7 @@ import importlib.util
 import time # new import
 import datetime # new import
 import Telempy as tp
-from Mainloop import get_connection
-
+from Main_Loop_Final import get_connection
 from picamera2 import Picamera2
 
 
@@ -79,7 +78,7 @@ def log_bboxes():
                 location = [plane.lat, plane.lon, plane.alt]
 
                 ### UNCOMMENT FOR JUST TESTING
-                # location = [34.23483, 92.32423, 312.432]
+                #location = [34.23483, 92.32423, 312.432]
 
                 if abs(x_0-x_checkclose) > 30:
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string, "Location": tuple(location)})
