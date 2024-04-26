@@ -1,32 +1,50 @@
-from gpiozero import Servo
-from time import sleep
+import RPi.GPIO as GPIO
+import time
 
-# Define servo and PWM values
-servo = Servo(26)
-neutral_pulse_width = 1556  # Neutral pulse width in microseconds
-adp1_pulse_width = 1193     # ADP1 pulse width in microseconds
-adp2_pulse_width = 2000     # ADP2 pulse width in microseconds
+# Calculate duty cycle in microseconds
+def us_to_duty_cycle(us, frequency):
+    return (us / 1000.0) * frequency
 
-# Define function to convert pulse width to angle
-def pulse_width_to_angle(pulse_width):
-    # Assuming a typical servo range of 1000 to 2000 microseconds
-    return (pulse_width - 1000) / (2000 - 1000) * 180
+def servo_activate(adp):
+    # Set the GPIO mode to BCM
+    GPIO.setmode(GPIO.BCM)
 
-try:
-    while True:
-        servo.value = pulse_width_to_angle(neutral_pulse_width)
-        print("Moved to Neutral position")
-        sleep(2)
+    # Set the GPIO pin for the servo
+    servo_pin = 26
 
-        servo.value = pulse_width_to_angle(adp1_pulse_width)
-        print("Moved to ADP1 position")
-        sleep(2)
+    # Set PWM parameters
+    frequency = 50  # Hz
+    neutral_duty_cycle = 7.5  # Duty cycle for neutral position (in %)
+    adp1_duty_cycle = 4.5     # Duty cycle for ADP1 position (in %)
+    adp2_duty_cycle = 10.0    # Duty cycle for ADP2 position (in %)
 
-        servo.value = pulse_width_to_angle(adp2_pulse_width)
-        print("Moved to ADP2 position")
-        sleep(2)
+    # Initialize servo PWM
+    GPIO.setup(servo_pin, GPIO.OUT)
+    pwm = GPIO.PWM(servo_pin, frequency)
+    pwm.start(neutral_duty_cycle)
 
-except KeyboardInterrupt:
-    servo.detach()
+    try:
+        if adp == 1:
+            # Move to ADP1 position
+            pwm.ChangeDutyCycle(adp1_duty_cycle)
+            time.sleep(2)
+            
+            # Move to Neutral position
+            pwm.ChangeDutyCycle(neutral_duty_cycle)
+            time.sleep(2)
+        
+        if adp == 2:
+            # Move to ADP2 position
+            pwm.ChangeDutyCycle(adp2_duty_cycle)
+            time.sleep(2)
+            
+            # Move to Neutral position
+            pwm.ChangeDutyCycle(neutral_duty_cycle)
+            time.sleep(2)
+       
 
+    except KeyboardInterrupt:
+        # Clean up GPIO on keyboard interrupt
+        pwm.stop()
+        GPIO.cleanup()
 

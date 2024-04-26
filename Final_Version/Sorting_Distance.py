@@ -59,10 +59,13 @@ def haversine_high_frequency(master, drop_points):
     '''
     High frequency update of plane location for the most accurate dropping position
     '''
+    #value for which adp to activate
+    ADP = 1
     while True:
         Signal, drop_points = haversine_check(master,drop_points, 'DROP', None)
         if Signal == 'DROP_SIGNAL':
-            servo_activate()
+            ADP += 1
+            servo_activate(ADP)
             break
     return drop_points
 
