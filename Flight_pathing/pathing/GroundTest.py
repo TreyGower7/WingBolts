@@ -1,6 +1,7 @@
 from pymavlink import mavutil, mavwp
 import time
 import csv
+from Sorting_Distance import haversine_check
 
 # Set the connection parameters (change accordingly)
 connection_string = '/dev/ttyAMA0'
@@ -43,7 +44,7 @@ def send_telem(waypoints,phase):
     altitude = altitude_handle(phase)                                                 
     seq = 1
     frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    radius = 10
+    radius = 7
     N = len(waypoints)
     for i in range(N):                  
         wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
@@ -78,27 +79,45 @@ def receive_telem():
         return msg
     
 def main():
+    mode = None
+    phase = None
     waypoints = [
-        {"lat": 30.323221, "lon":  -97.602798},
-        {"lat": 30.323180, "lon": -97.601598},
-        {"lat": 30.323715, "lon": -97.603007},
-        {"lat": 30.324627, "lon": -97.602312},
-        {"lat": 30.325696, "lon": -97.603918},
+    {"lat":   30.322588, "lon":  -97.602679},
+    {"lat": 30.322291634213112, "lon": -97.6018262396288},
     ]   
+    while mode is None:
+        mode = check_AUTO()
+        print('Waiting on Autopilot Mode')
+        if mode == 'AUTO':
+            phase = 'SEARCH'
+            send_telem(waypoints,phase)
+            break
 
-    send_telem(waypoints,'search')
+    while phase == 'SEARCH':
+        #Auto Pilot Check
+        mode = check_AUTO()
+        if mode != 'AUTO':
+            while mode != 'AUTO':
+                print('Change Mode Back to Auto')
+                time.sleep(.5)
+                mode = check_AUTO(master)
+                if mode == 'AUTO':
+                    print('Mode is Back to Auto')
+                    break
 
-    # Define the filename
-  #  filename = 'Telem_Test.csv'
+        #constantly updating waypoints
+        print("Checking Waypoint Progress")
+        waypoints = haversine_check(master, waypoints, 'Update_waypoints', None)        
+    
+        time.sleep(.2)  #Adjust as needed for the update frequency
 
-  #  with open(filename, 'w', newline='') as f:
-  #      writer = csv.writer(f)
-  #      writer.writerow(["lat", "lon", "alt", "Vx", "Vy", "Vz"])  # Write header
-  #      for i in range(20):
-  #          msg = receive_telem()  # Assuming receive_telem() returns telemetry data
-  #          row = [msg.lat, msg.lon, msg.alt, msg.vx, msg.vy, msg.vz]  # Create row of data
-  #          writer.writerow(row)  # Write row to CSV file
-    check_AUTO()
+        #once search is complete we go to next phase
+        if len(waypoints) == 0:
+            print("All waypoints reached")
+            break
+
+
+
 
 if __name__ == "__main__":
         main()
