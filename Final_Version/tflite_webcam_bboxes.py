@@ -80,7 +80,7 @@ def log_bboxes():
                 ### UNCOMMENT FOR JUST TESTING
                 #location = [34.23483, 92.32423, 312.432]
 
-                if abs(x_0-x_checkclose) > 30:
+                if abs(x_0-x_checkclose) > 30 or i==3:
                     logs.append({"Bbox": tuple(bbox), "Class": class_label, "Time":time_string, "Location": tuple(location)})
 
                     # log detection pics
@@ -261,7 +261,8 @@ while True:
     frame_resized = cv2.resize(frame_rgb, (width, height))
     input_data = np.expand_dims(frame_resized, axis=0)
 
-    out.write(frame)
+    # DON'T NEED TO RECORD
+    # out.write(frame)
 
     # Normalize pixel values if using a floating model (i.e. if model is non-quantized)
     if floating_model:
