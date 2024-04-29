@@ -5,8 +5,7 @@
 `Phases.py`  
 `Sorting_Distance.py`  
 `Telempy.py`  
-`servoscript.py`
-
+`servoscript.py` 
 `tflite_webcam_bboxes.py`  
 `trajectory.py`  
 
