@@ -56,7 +56,7 @@ def main():
         firstWaypoints.extend(firstWaypoints_copy)
 
     #fly three nautical miles
-    send_telem(master, waypoints, phase)
+    send_telem(master, firstWaypoints, phase)
      #Ensures we manually set the mode to AUTO
     while mode is None:
         mode = check_AUTO(master)
