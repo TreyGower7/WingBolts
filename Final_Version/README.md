@@ -1,13 +1,8 @@
 # Fly Off Commands
 ### Scripts (Ensure All of These Are Loaded on The Pi):
-`Main_Loop_Final.py`  
-`Object_loc.py`
-`Phases.py`  
-`Sorting_Distance.py`  
-`Telempy.py`  
-`servoscript.py` 
-`tflite_webcam_bboxes.py`  
-`trajectory.py`  
+`Main_Loop_Final.py`, `Object_loc.py`,`Phases.py`  
+`Sorting_Distance.py`, `Telempy.py`, `servoscript.py` 
+`tflite_webcam_bboxes.py`, `trajectory.py`  
 
 #### Run these commands on the raspberry pi pre-flight:
 - 1. Run the ML model
