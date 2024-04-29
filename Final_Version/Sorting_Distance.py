@@ -39,7 +39,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
     distance = R * c
         
     if use == 'Update_waypoints':
-        if distance < 0.003048: #10 feet
+        if distance < 0.006096: #20 feet
             print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
             waypoints.pop(0)  # Remove the reached waypoint
         else:
@@ -49,7 +49,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
         return distance
     
     if use == 'DROP':
-        if distance <= 0.0021336: #7 feet
+        if distance <= 0.003048: #10 feet
             waypoints.pop(0)  # Remove the reached waypoint
             return 'DROP_SIGNAL', waypoints
         else:
