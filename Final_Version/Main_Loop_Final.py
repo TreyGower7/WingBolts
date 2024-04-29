@@ -24,6 +24,8 @@ master = mavutil.mavlink_connection(connection_string, baud=baudrate)
 master.wait_heartbeat()
 print(f"Heartbeat from system ({master.target_system}, {master.target_component})")
 
+def get_connection():
+    return master
 def main():
     ''' Main Func '''
     phase = None
