@@ -14,9 +14,9 @@ def servo_activate(adp):
 
     # Set PWM parameters
     frequency = 50  # Hz
-    neutral_duty_cycle = 7.5  # Duty cycle for neutral position (in %)
-    adp1_duty_cycle = 4.5     # Duty cycle for ADP1 position (in %)
-    adp2_duty_cycle = 10.0    # Duty cycle for ADP2 position (in %)
+    neutral_duty_cycle = us_to_duty_cycle(150.1, frequency)  # Duty cycle for neutral position (in %)
+    adp1_duty_cycle = us_to_duty_cycle(184.1, frequency)     # Duty cycle for ADP1 position (in %)
+    adp2_duty_cycle = us_to_duty_cycle(100.0,frequency)    # Duty cycle for ADP2 position (in %)
 
     # Initialize servo PWM
     GPIO.setup(servo_pin, GPIO.OUT)
