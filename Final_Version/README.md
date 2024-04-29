@@ -7,7 +7,7 @@
 #### Run these commands on the raspberry pi pre-flight:
 - 1. Run the ML model
   - `python3 tflite_webcam_bboxes.py --modeldir=custom_model_lite`
-- 2. In a seperate terminal run `Main_Loop_Final.py`:
+- 2. In a seperate terminal run `Main_Loop_Final.py` (There is a possibilty errors will get thrown):
   - `sudo python3 Main_Loop_Final.py --master=/dev/tty/AMA0`
 
 ***NOTE: Ensure the servoscript is tested before proceeding with Main_Loop_Final.py (If the servo is drawing too much current it will crash the Pi)***
