@@ -121,6 +121,7 @@ def main():
             #populate waypoints for initial search phase
             send_telem(master, waypoints, phase)
             break
+
     #Another phase that changes altitude
     while phase == 'SURVEILLANCE':
         #Auto Pilot Check
@@ -145,6 +146,7 @@ def main():
             print("All waypoints reached")
             phase = 'DROP'
             break
+        
     #Convert Bounding Boxes to Locations
     Obj_main()
     #Get Waypoints from json file predrop setup and send to pixhawk
