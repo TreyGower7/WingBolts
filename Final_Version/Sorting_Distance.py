@@ -11,8 +11,8 @@ def haversine_check(master, waypoints, use, ref_waypoint):
     if use == 'Update_waypoints' or use == 'DROP':
         #get current position
         msg = receive_telem()
-        current_lat = msg.lat
-        current_lon = msg.lon
+        current_lat = msg.lat/(10^7)
+        current_lon = msg.lon/(10^7)
         waypoint_lat = waypoints[0]['lat']
         waypoint_lon = waypoints[0]['lon']
         

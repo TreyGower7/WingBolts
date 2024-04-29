@@ -75,7 +75,7 @@ def log_bboxes():
                 #Need the get connection function for getting the planes telemetry
                 master = get_connection()
                 plane = tp.receive_telem(master)
-                location = [plane.lat, plane.lon, plane.alt]
+                location = [plane.lat/(10^7), plane.lon/(10^7), plane.alt]
 
                 ### UNCOMMENT FOR JUST TESTING
                 #location = [34.23483, 92.32423, 312.432]
