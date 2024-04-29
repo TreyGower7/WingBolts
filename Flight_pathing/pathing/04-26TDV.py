@@ -43,7 +43,7 @@ def send_telem(waypoints,phase):
     altitude = altitude_handle(phase)                                                 
     seq = 1
     frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    radius = 5
+    radius = 7
     N = len(waypoints)
     for i in range(N):                  
         wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
@@ -78,6 +78,8 @@ def receive_telem():
         return msg
     
 def main():
+    mode = None
+    phase = None
     waypoints = [
     {"lat":   30.322588, "lon":  -97.602679},
     {"lat": 30.322291634213112, "lon": -97.6018262396288},

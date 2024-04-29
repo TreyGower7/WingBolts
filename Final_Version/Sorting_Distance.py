@@ -11,8 +11,8 @@ def haversine_check(master, waypoints, use, ref_waypoint):
     if use == 'Update_waypoints' or use == 'DROP':
         #get current position
         msg = receive_telem()
-        current_lat = msg.lat
-        current_lon = msg.lon
+        current_lat = msg.lat/(10^7)
+        current_lon = msg.lon/(10^7)
         waypoint_lat = waypoints[0]['lat']
         waypoint_lon = waypoints[0]['lon']
         
@@ -39,7 +39,7 @@ def haversine_check(master, waypoints, use, ref_waypoint):
     distance = R * c
         
     if use == 'Update_waypoints':
-        if distance < 0.003048: #10 feet
+        if distance < 0.006096: #20 feet
             print(f"Reached waypoint: {waypoints[0][0]}, {waypoints[0][1]}")
             waypoints.pop(0)  # Remove the reached waypoint
         else:
@@ -49,20 +49,21 @@ def haversine_check(master, waypoints, use, ref_waypoint):
         return distance
     
     if use == 'DROP':
-        if distance <= 0.0021336: #7 feet
+        if distance <= 0.003048: #10 feet
             waypoints.pop(0)  # Remove the reached waypoint
             return 'DROP_SIGNAL', waypoints
         else:
             return 'WAIT', None
 
-def haversine_high_frequency(master, drop_points):
+def haversine_high_frequency(master, drop_points, adp):
     '''
     High frequency update of plane location for the most accurate dropping position
     '''
+    #value for which adp to activate
     while True:
         Signal, drop_points = haversine_check(master,drop_points, 'DROP', None)
         if Signal == 'DROP_SIGNAL':
-            servo_activate()
+            servo_activate(adp)
             break
     return drop_points
 

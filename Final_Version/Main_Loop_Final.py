@@ -1,9 +1,10 @@
 from Phases import Search_zigzag, predrop_phase
 from Sorting_Distance import haversine_check, haversine_high_frequency
-from Telempy import send_telem, haversine_check, check_AUTO, receive_telem
+from Telempy import send_telem, check_AUTO, receive_telem
 import time
 from pymavlink import mavutil
 import json
+from Object_loc import Obj_main
 
 """
 Main script for connecting to pixhawk,
@@ -23,28 +24,24 @@ master = mavutil.mavlink_connection(connection_string, baud=baudrate)
 master.wait_heartbeat()
 print(f"Heartbeat from system ({master.target_system}, {master.target_component})")
 
+def get_connection():
+    return master
 def main():
     ''' Main Func '''
     phase = None
     mode = None
     Obj_waypoints = []
-    #Ensures we manually set the mode to AUTO
-    while mode is None:
-        mode = check_AUTO(master)
-        print('Waiting on Autopilot Mode')
-        if mode == 'AUTO':
-            phase = 'PRE_MISSION'
-            break
 
     distance = 0
     firstWaypoints = [
-            {"lat":   30.322588, "lon":  -97.602679},
-            {"lat": 30.322291634213112, "lon": -97.6018262396288},
-            {"lat":  30.323143653772693, "lon": -97.60142927270336},
-            {"lat": 30.325269418344888, "lon": -97.60358765983898},
-            {"lat": 30.32556423886435, "lon": -97.60242970541643},
-            {"lat": 30.323148122665625, "lon": -97.60268795424491}]
+            {"lat":  30.322625102951214, "lon": -97.60248728111718},
+            {"lat": 30.32295838950817, "lon": -97.60131930392731},
+            {"lat": 30.325349687298175, "lon": -97.6024100594848},
+            {"lat": 30.324727584029873, "lon": -97.60292879852376},
+            {"lat": 30.323560701045245, "lon": -97.60261830821472}
+    ]
     firstWaypoints_copy = firstWaypoints
+
     for i in range(len(firstWaypoints)):
         distance += haversine_check(None, firstWaypoints[i-1], 'Distance', firstWaypoints[i])
     #Distance of one loop # after 3 nautical miles: 1 meter = 0.000539957 miles
@@ -55,10 +52,22 @@ def main():
         total_naut_miles += nautMiles
         numofloops += 1;
         print(total_naut_miles)
-    for i in range(numofloops):
-        send_telem(master, waypoints, phase)
+
+    for i in range(numofloops-1):
         #For the Next loop
-        firstWaypoints.append(firstWaypoints)
+        firstWaypoints.extend(firstWaypoints_copy)
+
+    #fly three nautical miles
+    send_telem(master, firstWaypoints, phase)
+     #Ensures we manually set the mode to AUTO
+    while mode is None:
+        mode = check_AUTO(master)
+        if mode == 'AUTO':
+            phase = 'PRE_MISSION'
+            break
+        else:
+            print('Waiting on Autopilot Mode')
+
 
     while phase == 'PRE_MISSION':
         #Auto Pilot Check
@@ -66,7 +75,7 @@ def main():
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
-                time.sleep(.5)
+                time.sleep(1)
                 mode = check_AUTO(master)
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
@@ -75,15 +84,10 @@ def main():
         print("Checking Waypoint Progress")
         firstWaypoints = haversine_check(master, firstWaypoints, 'Update_waypoints', None)        
 
-        time.sleep(.2)  #Adjust as needed for the update frequency
+        time.sleep(.5)  #Adjust as needed for the update frequency
 
-        #need to repopulate waypoints due to how I wrote the code
-        if len(firstWaypoints) == 0 and pre != numofloops:
+        if len(firstWaypoints) == 0:
             print("All waypoints reached")
-            pre += 1
-            firstWaypoints = firstWaypoints_copy
-            continue
-        if len(firstWaypoints) == 0 and pre == numofloops:
             #Populate Coordinates for Search phase
             waypoints = Search_zigzag()
             #populate waypoints for initial search phase
@@ -98,7 +102,7 @@ def main():
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
-                time.sleep(.5)
+                time.sleep(1)
                 mode = check_AUTO(master)
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
@@ -108,7 +112,7 @@ def main():
         print("Checking Waypoint Progress")
         waypoints = haversine_check(master, waypoints, 'Update_waypoints', None)        
     
-        time.sleep(.2)  #Adjust as needed for the update frequency
+        time.sleep(.5)  #Adjust as needed for the update frequency
 
         #once search is complete we go to next phase
         if len(waypoints) == 0:
@@ -119,6 +123,7 @@ def main():
             #populate waypoints for initial search phase
             send_telem(master, waypoints, phase)
             break
+
     #Another phase that changes altitude
     while phase == 'SURVEILLANCE':
         #Auto Pilot Check
@@ -126,7 +131,7 @@ def main():
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
-                time.sleep(.5)
+                time.sleep(1)
                 mode = check_AUTO(master)
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
@@ -136,14 +141,16 @@ def main():
         print("Checking Waypoint Progress")
         waypoints = haversine_check(master, waypoints, 'Update_waypoints', None)        
 
-        time.sleep(.2)  #Adjust as needed for the update frequency
+        time.sleep(.5)  #Adjust as needed for the update frequency
 
         #once search is complete we go to next phase
         if len(waypoints) == 0:
             print("All waypoints reached")
             phase = 'DROP'
             break
-
+        
+    #Convert Bounding Boxes to Locations
+    Obj_main()
     #Get Waypoints from json file predrop setup and send to pixhawk
     with open('Final_Version/target_coords.json', 'r') as f:
         Obj_waypoints = json.loads(f)
@@ -154,6 +161,7 @@ def main():
 
     #Send sorted drop_point for target coords
     send_telem(master, drop_points, phase)
+    adp = 1
 
     while phase == 'DROP':
          #Auto Pilot Check
@@ -161,7 +169,7 @@ def main():
         if mode != 'AUTO':
             while mode != 'AUTO':
                 print('Change Mode Back to Auto')
-                time.sleep(.5)
+                time.sleep(1)
                 mode = check_AUTO(master)
                 if mode == 'AUTO':
                     print('Mode is Back to Auto')
@@ -169,8 +177,8 @@ def main():
 
         #constantly updating waypoints
         print("Checking For Payload Drop")
-        drop_points = haversine_high_frequency(master, drop_points)
-
+        drop_points = haversine_high_frequency(master, drop_points, adp)
+        adp += 1
         #once payload are dropped we go to mission end
         if len(drop_points) == 0:
             print("All Payloads Dropped To Targets")

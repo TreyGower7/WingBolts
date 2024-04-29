@@ -27,7 +27,7 @@ def send_telem(master, waypoints,phase):
     altitude = altitude_handle(phase)                                                 
     seq = 1
     frame = mavutil.mavlink.MAV_FRAME_GLOBAL_RELATIVE_ALT
-    radius = 10
+    radius = 5 #
     N = len(waypoints)
     for i in range(N):                  
         wp.add(mavutil.mavlink.MAVLink_mission_item_message(master.target_system,
@@ -73,7 +73,6 @@ def altitude_handle(phase):
     if phase == 'SURVEILLANCE':
         return 60.96
     if phase == 'DROP':
-        #dunno what we want here
         return 25.908
     if phase == 'PRE_MISSION': 
         return 91.44 

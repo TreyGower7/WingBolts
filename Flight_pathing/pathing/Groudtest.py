@@ -44,7 +44,7 @@ def haversine_check(waypoints, use, ref_waypoint):
     # Apply the Haversine formula
     a = math.sin(dlat / 2)**2 + math.cos(current_lat) * math.cos(waypoint_lat) * math.sin(dlon / 2)**2
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    distance = R * c
+    distance = (R * c)/1000 #This gives meters
         
     if use == 'Update_waypoints':
         if distance < 0.003048: #10 feet

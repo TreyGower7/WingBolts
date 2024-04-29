@@ -1,26 +1,50 @@
-from gpiozero import Servo
-from time import sleep
+import RPi.GPIO as GPIO
+import time
 
-# Define servo and PWM values
-servo = Servo(26)
-neutral_pwm = 0   # Neutral position
-adp1_pwm = -1     # ADP1 position
-adp2_pwm = 1      # ADP2 position
+# Calculate duty cycle in microseconds
+def us_to_duty_cycle(us, frequency):
+    return (us / 1000.0) * frequency
 
-try:
-    while True:
-        servo.value = neutral_pwm
-        print("Moved to Neutral position")
-        sleep(2)
+def servo_activate(adp):
+    # Set the GPIO mode to BCM
+    GPIO.setmode(GPIO.BCM)
 
-        servo.value = adp1_pwm
-        print("Moved to ADP1 position")
-        sleep(2)
+    # Set the GPIO pin for the servo
+    servo_pin = 26
 
-        servo.value = adp2_pwm
-        print("Moved to ADP2 position")
-        sleep(2)
+    # Set PWM parameters
+    frequency = 50  # Hz
+    neutral_duty_cycle = 7.5  # Duty cycle for neutral position (in %)
+    adp1_duty_cycle = 4.5     # Duty cycle for ADP1 position (in %)
+    adp2_duty_cycle = 10.0    # Duty cycle for ADP2 position (in %)
 
-except KeyboardInterrupt:
-    servo.detach()
+    # Initialize servo PWM
+    GPIO.setup(servo_pin, GPIO.OUT)
+    pwm = GPIO.PWM(servo_pin, frequency)
+    pwm.start(neutral_duty_cycle)
+
+    try:
+        if adp == 1:
+            # Move to ADP1 position
+            pwm.ChangeDutyCycle(adp1_duty_cycle)
+            time.sleep(2)
+            
+            # Move to Neutral position
+            pwm.ChangeDutyCycle(neutral_duty_cycle)
+            time.sleep(2)
+        
+        if adp == 2:
+            # Move to ADP2 position
+            pwm.ChangeDutyCycle(adp2_duty_cycle)
+            time.sleep(2)
+            
+            # Move to Neutral position
+            pwm.ChangeDutyCycle(neutral_duty_cycle)
+            time.sleep(2)
+       
+
+    except KeyboardInterrupt:
+        # Clean up GPIO on keyboard interrupt
+        pwm.stop()
+        GPIO.cleanup()
 
